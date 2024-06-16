@@ -3,7 +3,7 @@ use std::{
     io::Read,
 };
 
-use aoc_template::{p1, p2};
+use day10::{p1, p2};
 
 
 

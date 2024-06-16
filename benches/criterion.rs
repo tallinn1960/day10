@@ -1,7 +1,7 @@
 // a criterion benchmark for p2, p2_reverse, and p2_maps
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use aoc_template::{p1, p2};
+use day10::{p1, p2};
 use std::fs::File;
 use std::io::Read;
 
