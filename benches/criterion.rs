@@ -7,7 +7,7 @@ use std::io::Read;
 
 fn bench_p1(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("p1", |b| {
+    g.bench_function("part1", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
@@ -24,7 +24,7 @@ fn bench_p1(c: &mut Criterion) {
 
 fn bench_p2(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("p2", |b| {
+    g.bench_function("part2", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");

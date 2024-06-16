@@ -1,11 +1,6 @@
-use std::{
-    fs::File,
-    io::Read,
-};
+use std::{fs::File, io::Read};
 
 use day10::{p1, p2};
-
-
 
 fn main() {
     let mut f = File::open("input.txt").expect("can't open file");
@@ -16,4 +11,3 @@ fn main() {
     let result = p2(&buf);
     println!("{result}");
 }
-

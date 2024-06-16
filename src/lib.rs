@@ -1,13 +1,22 @@
-#[allow(unused_variables)]
 pub fn p1(input: &str) -> u64 {
     let lines = input.lines().collect::<Vec<_>>();
     let map = Map::new(&lines);
-    map.find_path() as u64
+    if let Some(path) = map.find_loop() {
+        (path.len() / 2) as u64
+    } else {
+        0
+    }
 }
 
-#[allow(unused_variables)]
 pub fn p2(input: &str) -> u64 {
-    todo!()
+    let lines = input.lines().collect::<Vec<_>>();
+    let map = Map::new(&lines);
+    if let Some(_path) = map.find_loop() {
+        // apply shoelace algorithm on path
+        todo!("apply shoelace algorithm on path")
+    } else {
+        0
+    }
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -102,158 +111,151 @@ impl Map<'_> {
 
     fn neighbors(&self, loc: &Location) -> Vec<Location> {
         let mut result = Vec::new();
-        if let Some(symbol) = self.get((loc.x, loc.y)) {
-            match symbol {
-                '|' => {
-                    if let Some(north) = loc.north() {
-                        result.push(Location {
-                            x: north.0,
-                            y: north.1,
-                        });
-                    }
-                    if let Some(south) = loc.south(self.lower_right.y) {
-                        result.push(Location {
-                            x: south.0,
-                            y: south.1,
-                        });
-                    }
+        match self.get((loc.x, loc.y)) {
+            '|' => {
+                if let Some(north) = loc.north() {
+                    result.push(Location {
+                        x: north.0,
+                        y: north.1,
+                    });
                 }
-                '-' => {
-                    if let Some(east) = loc.east(self.lower_right.x) {
-                        result.push(Location {
-                            x: east.0,
-                            y: east.1,
-                        });
-                    }
-                    if let Some(west) = loc.west() {
-                        result.push(Location {
-                            x: west.0,
-                            y: west.1,
-                        });
-                    }
+                if let Some(south) = loc.south(self.lower_right.y) {
+                    result.push(Location {
+                        x: south.0,
+                        y: south.1,
+                    });
                 }
-                'L' => {
-                    if let Some(north) = loc.north() {
-                        result.push(Location {
-                            x: north.0,
-                            y: north.1,
-                        });
-                    }
-                    if let Some(east) = loc.east(self.lower_right.x) {
-                        result.push(Location {
-                            x: east.0,
-                            y: east.1,
-                        });
-                    }
-                }
-                'J' => {
-                    if let Some(north) = loc.north() {
-                        result.push(Location {
-                            x: north.0,
-                            y: north.1,
-                        });
-                    }
-                    if let Some(west) = loc.west() {
-                        result.push(Location {
-                            x: west.0,
-                            y: west.1,
-                        });
-                    }
-                }
-                '7' => {
-                    if let Some(south) = loc.south(self.lower_right.y) {
-                        result.push(Location {
-                            x: south.0,
-                            y: south.1,
-                        });
-                    }
-                    if let Some(west) = loc.west() {
-                        result.push(Location {
-                            x: west.0,
-                            y: west.1,
-                        });
-                    }
-                }
-                'F' => {
-                    if let Some(south) = loc.south(self.lower_right.y) {
-                        result.push(Location {
-                            x: south.0,
-                            y: south.1,
-                        });
-                    }
-                    if let Some(east) = loc.east(self.lower_right.x) {
-                        result.push(Location {
-                            x: east.0,
-                            y: east.1,
-                        });
-                    }
-                }
-                _ => {}
             }
-        } else {
-            result = Vec::new();
+            '-' => {
+                if let Some(east) = loc.east(self.lower_right.x) {
+                    result.push(Location {
+                        x: east.0,
+                        y: east.1,
+                    });
+                }
+                if let Some(west) = loc.west() {
+                    result.push(Location {
+                        x: west.0,
+                        y: west.1,
+                    });
+                }
+            }
+            'L' => {
+                if let Some(north) = loc.north() {
+                    result.push(Location {
+                        x: north.0,
+                        y: north.1,
+                    });
+                }
+                if let Some(east) = loc.east(self.lower_right.x) {
+                    result.push(Location {
+                        x: east.0,
+                        y: east.1,
+                    });
+                }
+            }
+            'J' => {
+                if let Some(north) = loc.north() {
+                    result.push(Location {
+                        x: north.0,
+                        y: north.1,
+                    });
+                }
+                if let Some(west) = loc.west() {
+                    result.push(Location {
+                        x: west.0,
+                        y: west.1,
+                    });
+                }
+            }
+            '7' => {
+                if let Some(south) = loc.south(self.lower_right.y) {
+                    result.push(Location {
+                        x: south.0,
+                        y: south.1,
+                    });
+                }
+                if let Some(west) = loc.west() {
+                    result.push(Location {
+                        x: west.0,
+                        y: west.1,
+                    });
+                }
+            }
+            'F' => {
+                if let Some(south) = loc.south(self.lower_right.y) {
+                    result.push(Location {
+                        x: south.0,
+                        y: south.1,
+                    });
+                }
+                if let Some(east) = loc.east(self.lower_right.x) {
+                    result.push(Location {
+                        x: east.0,
+                        y: east.1,
+                    });
+                }
+            }
+            _ => {}
         }
         result
     }
 
     // given a location, return the char in the map
-    fn get(&self, loc: (u32, u32)) -> Option<char> {
-        self.map[loc.1 as usize].chars().nth(loc.0 as usize)
+    #[inline]
+    fn get(&self, loc: (u32, u32)) -> char {
+        self.map[loc.1 as usize]
+            .chars()
+            .nth(loc.0 as usize)
+            .unwrap_or('.')
     }
 
     // given the location, return a list of all positions that are connected to this location
     fn connected_to(&self, loc: &Location) -> Vec<Location> {
         let mut result: Vec<Location> = Vec::new();
         if let Some(north) = loc.north() {
-            if let Some(symbol) = self.get(north) {
-                match symbol {
-                    'S' | '|' | 'F' | '7' => {
-                        result.push(north.into());
-                    }
-                    _ => {}
+            match self.get(north) {
+                'S' | '|' | 'F' | '7' => {
+                    result.push(north.into());
                 }
+                _ => {}
             }
         }
         if let Some(south) = loc.south(self.lower_right.y) {
-            if let Some(symbol) = self.get(south) {
-                match symbol {
-                    'S' | '|' | 'L' | 'J' => {
-                        result.push(south.into());
-                    }
-                    _ => {}
+            match self.get(south) {
+                'S' | '|' | 'L' | 'J' => {
+                    result.push(south.into());
                 }
+                _ => {}
             }
         }
         if let Some(west) = loc.west() {
-            if let Some(symbol) = self.get(west) {
-                match symbol {
-                    'S' | '-' | 'F' | 'L' => {
-                        result.push(west.into());
-                    }
-                    _ => {}
+            match self.get(west) {
+                'S' | '-' | 'F' | 'L' => {
+                    result.push(west.into());
                 }
+                _ => {}
             }
         }
         if let Some(east) = loc.east(self.lower_right.x) {
-            if let Some(symbol) = self.get(east) {
-                match symbol {
-                    'S' | '-' | 'J' | '7' => {
-                        result.push(east.into());
-                    }
-                    _ => {}
+            match self.get(east) {
+                'S' | '-' | 'J' | '7' => {
+                    result.push(east.into());
                 }
+                _ => {}
             }
         }
         result
     }
 
-    // given a map, find the start location, and try all connected tiles recursively
-    // until we find the start location again - do never go back to an already visited location
-    fn find_path(&self) -> u32 {
+    // given a map, find the start location, and follow the path leading from there,
+    // until you return to the start location, return the found path, if there is any,
+    // or None. As every tile has only one next non-visited reachable tile when reached, we find
+    // either a loop returning to start or end at the border of the map (which leads to a None result).
+    fn find_loop(&self) -> Option<Vec<Location>> {
         // protect vs empty map
         if let Some(start) = self.find_start() {
             let mut last_visited = start;
-            let mut steps = 1;
             // protect vs isolated starting point
             if let Some(current) = self.connected_to(&start).first() {
                 let mut current = *current;
@@ -264,24 +266,22 @@ impl Map<'_> {
                     .find(|&loc| loc != last_visited)
                 {
                     path.push(next_loc); // this is for part2
-                    steps += 1;
                     if next_loc == start {
-                        break;
+                        return Some(path);
                     }
                     last_visited = current;
                     current = next_loc;
                 }
-                // if the path did not reach the starting point again,
-                // this may be the wrong result
-                return steps / 2;
             }
         }
-        0
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
+
+    use std::{fs::File, io::Read};
 
     use super::*;
 
@@ -336,34 +336,58 @@ mod tests {
     }
 
     #[test]
-    fn test_find_path() {
+    fn test_find_loop() {
         let v = vec![".....", ".S-7.", ".|.|.", ".L-J.", "....."];
         let map = Map::new(&v);
-        let steps = map.find_path();
+        let steps = map.find_loop().unwrap().len() / 2;
         assert_eq!(steps, 4);
     }
 
     #[test]
-    fn test_find_path2() {
+    fn test_find_loop2() {
         let v = vec!["..F7.", ".FJ|.", "SJ.L7", "|F--J", "LJ..."];
         let map = Map::new(&v);
-        let steps = map.find_path();
+        let steps = map.find_loop().unwrap().len() / 2;
         assert_eq!(steps, 8);
     }
 
     #[test]
-    fn test_find_path_empty() {
+    fn test_find_loop_empty() {
         let v = Vec::new();
         let map = Map::new(&v);
-        let steps = map.find_path();
-        assert_eq!(steps, 0);
+        let path = map.find_loop();
+        assert_eq!(path, None);
     }
 
     #[test]
-    fn test_find_path_isolated() {
+    fn test_find_loop_isolated() {
         let v = vec!["...", ".S.", "..."];
         let map = Map::new(&v);
-        let steps = map.find_path();
-        assert_eq!(steps, 0);
+        let path = map.find_loop();
+        assert_eq!(path, None);
+    }
+    #[test]
+    fn test_map_wih_no_loop() {
+        let v = vec![".7.", "-S-", ".|."];
+        let map = Map::new(&v);
+        let path = map.find_loop();
+        assert_eq!(path, None);
+    }
+
+    #[test]
+    fn test_map_wih_no_starting_point() {
+        let v = vec!["F-7", "|.|", "L-J"];
+        let map = Map::new(&v);
+        let path = map.find_loop();
+        assert_eq!(path, None);
+    }
+
+    #[test]
+    fn test_part1() {
+        let mut f = File::open("input.txt").expect("can't open file");
+        let mut buf = String::new();
+        f.read_to_string(&mut buf).expect("can't read file");
+        let result = p1(&buf);
+        assert_eq!(result, 6778);
     }
 }
