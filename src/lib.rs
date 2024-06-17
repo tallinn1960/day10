@@ -65,6 +65,14 @@ impl From<(u32, u32)> for Location {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
 struct Map<'a> {
     lower_right: Location,
     map: &'a [&'a str],
@@ -99,8 +107,7 @@ impl Map<'_> {
         None
     }
 
-    // given certain chars as pipes connecting a Location to its neighbors
-    // given a map and a location, return a vector of the neighbors. The chars are
+    //  The chars are
     // | is a vertical pipe connecting north and south.
     // - is a horizontal pipe connecting east and west.
     // L is a 90-degree bend connecting north and east.
@@ -109,96 +116,52 @@ impl Map<'_> {
     // F is a 90-degree bend connecting south and east.
     // . is ground; there is no pipe in this tile.
 
-    fn neighbors(&self, loc: &Location) -> Vec<Location> {
-        let mut result = Vec::new();
+    #[inline]
+    fn next_tile(
+        &self,
+        loc: &Location,
+        coming_from: Direction,
+    ) -> Option<(Location, Direction)> {
         match self.get((loc.x, loc.y)) {
-            '|' => {
-                if let Some(north) = loc.north() {
-                    result.push(Location {
-                        x: north.0,
-                        y: north.1,
-                    });
-                }
-                if let Some(south) = loc.south(self.lower_right.y) {
-                    result.push(Location {
-                        x: south.0,
-                        y: south.1,
-                    });
-                }
+            // these brackets/no brackets shenanigans are caused by rust-fmt
+            '|' if coming_from == Direction::South => {
+                loc.north().map(|north| (north.into(), Direction::South))
             }
-            '-' => {
-                if let Some(east) = loc.east(self.lower_right.x) {
-                    result.push(Location {
-                        x: east.0,
-                        y: east.1,
-                    });
-                }
-                if let Some(west) = loc.west() {
-                    result.push(Location {
-                        x: west.0,
-                        y: west.1,
-                    });
-                }
+            '|' if coming_from == Direction::North => loc
+                .south(self.lower_right.y)
+                .map(|north| (north.into(), Direction::North)),
+            '-' if coming_from == Direction::West => loc
+                .east(self.lower_right.x)
+                .map(|north| (north.into(), Direction::West)),
+            '-' if coming_from == Direction::East => {
+                loc.west().map(|north| (north.into(), Direction::East))
             }
-            'L' => {
-                if let Some(north) = loc.north() {
-                    result.push(Location {
-                        x: north.0,
-                        y: north.1,
-                    });
-                }
-                if let Some(east) = loc.east(self.lower_right.x) {
-                    result.push(Location {
-                        x: east.0,
-                        y: east.1,
-                    });
-                }
+            'L' if coming_from == Direction::North => loc
+                .east(self.lower_right.x)
+                .map(|north| (north.into(), Direction::West)),
+            'L' if coming_from == Direction::East => {
+                loc.north().map(|north| (north.into(), Direction::South))
             }
-            'J' => {
-                if let Some(north) = loc.north() {
-                    result.push(Location {
-                        x: north.0,
-                        y: north.1,
-                    });
-                }
-                if let Some(west) = loc.west() {
-                    result.push(Location {
-                        x: west.0,
-                        y: west.1,
-                    });
-                }
+            'J' if coming_from == Direction::North => {
+                loc.west().map(|north| (north.into(), Direction::East))
             }
-            '7' => {
-                if let Some(south) = loc.south(self.lower_right.y) {
-                    result.push(Location {
-                        x: south.0,
-                        y: south.1,
-                    });
-                }
-                if let Some(west) = loc.west() {
-                    result.push(Location {
-                        x: west.0,
-                        y: west.1,
-                    });
-                }
+            'J' if coming_from == Direction::West => {
+                loc.north().map(|north| (north.into(), Direction::South))
             }
-            'F' => {
-                if let Some(south) = loc.south(self.lower_right.y) {
-                    result.push(Location {
-                        x: south.0,
-                        y: south.1,
-                    });
-                }
-                if let Some(east) = loc.east(self.lower_right.x) {
-                    result.push(Location {
-                        x: east.0,
-                        y: east.1,
-                    });
-                }
+            '7' if coming_from == Direction::South => {
+                loc.west().map(|north| (north.into(), Direction::East))
             }
-            _ => {}
+            '7' if coming_from == Direction::West => loc
+                .south(self.lower_right.y)
+                .map(|north| (north.into(), Direction::North)),
+            'F' if coming_from == Direction::East => loc
+                .south(self.lower_right.y)
+                .map(|north| (north.into(), Direction::North)),
+            'F' if coming_from == Direction::South => loc
+                .east(self.lower_right.x)
+                .map(|north| (north.into(), Direction::West)),
+            _ => None,
         }
-        result
     }
 
     // given a location, return the char in the map
@@ -211,12 +174,12 @@ impl Map<'_> {
     }
 
     // given the location, return a list of all positions that are connected to this location
-    fn connected_to(&self, loc: &Location) -> Vec<Location> {
-        let mut result: Vec<Location> = Vec::new();
+    fn connected_to(&self, loc: &Location) -> Vec<(Location, Direction)> {
+        let mut result = Vec::new();
         if let Some(north) = loc.north() {
             match self.get(north) {
                 'S' | '|' | 'F' | '7' => {
-                    result.push(north.into());
+                    result.push((north.into(), Direction::South));
                 }
                 _ => {}
             }
@@ -224,7 +187,7 @@ impl Map<'_> {
         if let Some(south) = loc.south(self.lower_right.y) {
             match self.get(south) {
                 'S' | '|' | 'L' | 'J' => {
-                    result.push(south.into());
+                    result.push((south.into(), Direction::North));
                 }
                 _ => {}
             }
@@ -232,7 +195,7 @@ impl Map<'_> {
         if let Some(west) = loc.west() {
             match self.get(west) {
                 'S' | '-' | 'F' | 'L' => {
-                    result.push(west.into());
+                    result.push((west.into(), Direction::East));
                 }
                 _ => {}
             }
@@ -240,7 +203,7 @@ impl Map<'_> {
         if let Some(east) = loc.east(self.lower_right.x) {
             match self.get(east) {
                 'S' | '-' | 'J' | '7' => {
-                    result.push(east.into());
+                    result.push((east.into(), Direction::West));
                 }
                 _ => {}
             }
@@ -255,22 +218,20 @@ impl Map<'_> {
     fn find_loop(&self) -> Option<Vec<Location>> {
         // protect vs empty map
         if let Some(start) = self.find_start() {
-            let mut last_visited = start;
             // protect vs isolated starting point
-            if let Some(current) = self.connected_to(&start).first() {
-                let mut current = *current;
+            if let Some((mut current, mut coming_from)) =
+                self.connected_to(&start).first()
+            {
                 let mut path = vec![start, current];
-                while let Some(next_loc) = self
-                    .neighbors(&current)
-                    .into_iter()
-                    .find(|&loc| loc != last_visited)
+                while let Some((next_loc, direction)) =
+                    self.next_tile(&current, coming_from)
                 {
                     path.push(next_loc); // this is for part2
                     if next_loc == start {
                         return Some(path);
                     }
-                    last_visited = current;
                     current = next_loc;
+                    coming_from = direction;
                 }
             }
         }
@@ -297,19 +258,6 @@ mod tests {
     }
 
     #[test]
-    fn test_neighbors() {
-        let map = Map {
-            lower_right: Location { x: 2, y: 2 },
-            map: &["...", ".J.", "..."],
-        };
-        let start = Location { x: 1, y: 1 };
-        let neighbors = map.neighbors(&start);
-        assert_eq!(neighbors.len(), 2);
-        let expected = vec![Location { x: 1, y: 0 }, Location { x: 0, y: 1 }];
-        assert_eq!(neighbors, expected);
-    }
-
-    #[test]
     fn test_connected_to() {
         let map = Map {
             lower_right: Location { x: 4, y: 4 },
@@ -318,7 +266,10 @@ mod tests {
         let start = Location { x: 1, y: 1 };
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
-        let expected = vec![Location { x: 1, y: 2 }, Location { x: 2, y: 1 }];
+        let expected = vec![
+            (Location { x: 1, y: 2 }, Direction::North),
+            (Location { x: 2, y: 1 }, Direction::West),
+        ];
         assert_eq!(connected, expected);
     }
 
@@ -331,7 +282,10 @@ mod tests {
         let start = Location { x: 1, y: 1 };
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
-        let expected = vec![Location { x: 1, y: 2 }, Location { x: 2, y: 1 }];
+        let expected = vec![
+            (Location { x: 1, y: 2 }, Direction::North),
+            (Location { x: 2, y: 1 }, Direction::West),
+        ];
         assert_eq!(connected, expected);
     }
 
@@ -380,6 +334,60 @@ mod tests {
         let map = Map::new(&v);
         let path = map.find_loop();
         assert_eq!(path, None);
+    }
+
+    #[test]
+    fn test_next_tile() {
+        let v = vec![".....", ".F-7.", ".|.|.", ".L-J.", "....."];
+        let map = Map::new(&v);
+        let result = map
+            .next_tile(&Location { x: 1, y: 1 }, Direction::South)
+            .unwrap();
+        assert_eq!(result, (Location { x: 2, y: 1 }, Direction::West));
+        let result = map
+            .next_tile(&Location { x: 1, y: 1 }, Direction::East)
+            .unwrap();
+        assert_eq!(result, (Location { x: 1, y: 2 }, Direction::North));
+        let result = map
+            .next_tile(&Location { x: 2, y: 1 }, Direction::West)
+            .unwrap();
+        assert_eq!(result, (Location { x: 3, y: 1 }, Direction::West));
+        let result = map
+            .next_tile(&Location { x: 2, y: 1 }, Direction::East)
+            .unwrap();
+        assert_eq!(result, (Location { x: 1, y: 1 }, Direction::East));
+        let result = map
+            .next_tile(&Location { x: 3, y: 1 }, Direction::West)
+            .unwrap();
+        assert_eq!(result, (Location { x: 3, y: 2 }, Direction::North));
+        let result = map
+            .next_tile(&Location { x: 3, y: 1 }, Direction::South)
+            .unwrap();
+        assert_eq!(result, (Location { x: 2, y: 1 }, Direction::East));
+        let result = map
+            .next_tile(&Location { x: 1, y: 2 }, Direction::North)
+            .unwrap();
+        assert_eq!(result, (Location { x: 1, y: 3 }, Direction::North));
+        let result = map
+            .next_tile(&Location { x: 1, y: 2 }, Direction::South)
+            .unwrap();
+        assert_eq!(result, (Location { x: 1, y: 1 }, Direction::South));
+        let result = map
+            .next_tile(&Location { x: 1, y: 3 }, Direction::North)
+            .unwrap();
+        assert_eq!(result, (Location { x: 2, y: 3 }, Direction::West));
+        let result = map
+            .next_tile(&Location { x: 1, y: 3 }, Direction::East)
+            .unwrap();
+        assert_eq!(result, (Location { x: 1, y: 2 }, Direction::South));
+        let result = map
+            .next_tile(&Location { x: 3, y: 3 }, Direction::North)
+            .unwrap();
+        assert_eq!(result, (Location { x: 2, y: 3 }, Direction::East));
+        let result = map
+            .next_tile(&Location { x: 3, y: 3 }, Direction::West)
+            .unwrap();
+        assert_eq!(result, (Location { x: 3, y: 2 }, Direction::South));
     }
 
     #[test]
