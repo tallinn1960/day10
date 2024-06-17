@@ -5,7 +5,7 @@ pub mod github;
 pub fn p1(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
-        path.len() / 2 
+        path.len() / 2
     } else {
         0
     }
@@ -14,9 +14,9 @@ pub fn p1(input: &str) -> usize {
 pub fn p2(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
-        // calculate area by shoelace, apply picks theorem
-        // for the number of enclosed tiles
-        shoelace_with_picks_theorem(path) 
+        // Calculate the number of tiles enclosed
+        // by the path.
+        shoelace_with_picks_theorem(path)
     } else {
         0
     }
@@ -30,8 +30,8 @@ fn parse(input: &str) -> Map {
         .map(|l| l.as_bytes())
         .enumerate()
         .inspect(|&(y, chars)| {
-            if let Some(pos) = memchr(b'S', chars) {
-                start_pos = Location { x: pos, y: y };
+            if let Some(x) = memchr(b'S', chars) {
+                start_pos = Location { x, y };
             }
         })
         .map(|(_, l)| l)
@@ -106,7 +106,7 @@ struct Map<'a> {
 }
 
 impl Map<'_> {
-    fn new<'a>(starting_pos: Location, map: Vec<&'a [u8]>) -> Map<'_> {
+    fn new(starting_pos: Location, map: Vec<&[u8]>) -> Map {
         let lower_right = Location {
             x: if let Some(&row) = map.first() {
                 row.len()
@@ -123,22 +123,16 @@ impl Map<'_> {
         }
     }
 
-    //  The chars are
-    // | is a vertical pipe connecting north and south.
-    // - is a horizontal pipe connecting east and west.
-    // L is a 90-degree bend connecting north and east.
-    // J is a 90-degree bend connecting north and west.
-    // 7 is a 90-degree bend connecting south and west.
-    // F is a 90-degree bend connecting south and east.
-    // . is ground; there is no pipe in this tile.
-
+    /// Find the next tile to go to from a Location,
+    /// coming from a direction not to return to.
     fn next_tile(
         &self,
         loc: &Location,
         coming_from: Direction,
     ) -> Option<(Location, Direction)> {
         match (self.get(*loc), coming_from) {
-            // these brackets/no brackets shenanigans are caused by rust-fmt
+            // These brackets/no brackets shenanigans are caused by rust-fmt.
+            // Note that collapsing branches hurts performance.
             (b'|', Direction::South) => {
                 loc.north().map(|north| (north, Direction::South))
             }
@@ -179,16 +173,13 @@ impl Map<'_> {
         }
     }
 
-    /// given a location, return the char in the map
-    /// not that this function does no bound checking
+    /// Given a location, return the char in the map.
+    /// Note that this function does no bound checking.
     fn get(&self, loc: Location) -> u8 {
-        unsafe {
-            *(*self.map.get_unchecked(loc.y as usize))
-                .get_unchecked(loc.x as usize)
-        }
+        unsafe { *(*self.map.get_unchecked(loc.y)).get_unchecked(loc.x) }
     }
 
-    // given the location, return a list of all positions that are connected to this location
+    /// Given the location, return a list of all positions that are connected to this location.
     fn connected_to(&self, loc: &Location) -> Vec<(Location, Direction)> {
         let mut result = Vec::new();
         if let Some(north) = loc.north() {
@@ -226,10 +217,12 @@ impl Map<'_> {
         result
     }
 
-    /// given a map, find the start location, and follow the path leading from there,
-    /// until you return to the start location, return the found path, if there is any,
-    /// or None. As every tile has only one next non-visited reachable tile when reached, we find
-    /// either a loop returning to start or end at the border of the map (which leads to a None result).
+    /// Find the loop that returns to the starting point, if there is any.
+    /// The returned sequence of locations include the starting point as
+    /// the first and last location in the list. It is a closed polygon, but with
+    /// all integer coordinates in the list, not just the edges.
+    /// The function assumes that there is a loop and tries the first tile
+    /// leading away from the starting point only to find it.
     fn find_loop(&self) -> Option<Vec<Location>> {
         // this assumes that any reachable tile from S is part of the loop
         if let Some((mut current, mut coming_from)) =
@@ -239,7 +232,8 @@ impl Map<'_> {
             while let Some((next_loc, direction)) =
                 self.next_tile(&current, coming_from)
             {
-                // this is for part2 - the funny thing is, this is faster than counting steps
+                // this is for part2 - the funny thing is, this is faster
+                // than counting steps
                 path.push(next_loc);
                 if next_loc == self.starting_pos {
                     return Some(path);
@@ -253,14 +247,19 @@ impl Map<'_> {
     }
 }
 
-/// this assumes that the last point in the list is
-/// the same as the first point in the list
+/// Computes the number of enclosed tiles of the given path.
+/// This expects that the last point in the list is
+/// the same as the first point in the list, like in the return
+/// value of map.find_loop(). This function may panic with
+/// integer overflow, depending on the range of x and y coordinates
+/// in the path. So keep your map size reasonable.
 fn shoelace_with_picks_theorem(path: Vec<Location>) -> usize {
     let n = path.len();
     // shoelace for area
     // we need to switch to isize arithmetic as area may
     // become negative
-    let area: isize = (0..n - 1)
+    // TODO: check if this works with unsigned ints and wrap-around
+    let area = (0..n - 1)
         .fold(0, |acc, i| {
             // avoid bound checking is safe here
             let xi = unsafe { path.get_unchecked(i).x } as isize;
@@ -269,10 +268,10 @@ fn shoelace_with_picks_theorem(path: Vec<Location>) -> usize {
             let y_next = unsafe { path.get_unchecked(i + 1).y } as isize;
             acc + (yi + y_next) * (xi - x_next)
         })
-        .abs()
+        .abs() as usize
         / 2;
     // Pick's theorem
-    (area - (path.len() as isize - 1) / 2 + 1) as usize
+    area - (n - 1) / 2 + 1
 }
 
 #[cfg(test)]
