@@ -10,4 +10,7 @@ fn main() {
     println!("{result}");
     let result = p2(&buf);
     println!("{result}");
+    let result = day10::github::p2(&buf);
+    println!("{result}");
+
 }

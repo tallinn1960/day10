@@ -19,3 +19,10 @@ fn part2() {
         "../input.txt",
     )));
 }
+
+#[divan::bench]
+fn part2_github() {
+    day10::github::p2(divan::black_box(include_str!(
+        "../input.txt",
+    )));
+}
