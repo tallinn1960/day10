@@ -1,4 +1,5 @@
 pub mod github;
+pub mod github2;
 
 pub fn p1(input: &str) -> u64 {
     let (start_pos, lines) = parse(input);
@@ -11,12 +12,17 @@ pub fn p1(input: &str) -> u64 {
 }
 
 fn parse(input: &str) -> ((u32, u32), Vec<Vec<char>>) {
-    let mut start_pos = (0,0);
-    let lines = input.lines()
-    .enumerate()
-    .inspect(| (y, chars)| if let Some(pos) = chars.find(|c| c == 'S') { start_pos = (pos as u32,*y as u32)})
-    .map(|(_, l)| l.chars().collect::<Vec<_>>())
-    .collect::<Vec<_>>();
+    let mut start_pos = (0, 0);
+    let lines = input
+        .lines()
+        .enumerate()
+        .inspect(|(y, chars)| {
+            if let Some(pos) = chars.find(|c| c == 'S') {
+                start_pos = (pos as u32, *y as u32)
+            }
+        })
+        .map(|(_, l)| l.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
     (start_pos, lines)
 }
 
@@ -32,7 +38,6 @@ pub fn p2(input: &str) -> u64 {
     }
 }
 
-
 #[derive(Debug, PartialEq, Copy, Clone)]
 struct Location {
     x: u32,
@@ -40,42 +45,48 @@ struct Location {
 }
 
 impl Location {
-    fn north(&self) -> Option<(u32, u32)> {
+    fn north(&self) -> Option<Location> {
         if self.y > 0 {
-            Some((self.x, self.y.saturating_sub(1)))
+            Some(Location {
+                x: self.x,
+                y: self.y.saturating_sub(1),
+            })
         } else {
             None
         }
     }
 
-    fn south(&self, maxy: u32) -> Option<(u32, u32)> {
+    fn south(&self, maxy: u32) -> Option<Location> {
         if self.y < maxy {
-            Some((self.x, self.y.saturating_add(1)))
+            Some(Location {
+                x: self.x,
+                y: self.y.saturating_add(1),
+            })
         } else {
             None
         }
     }
 
-    fn east(&self, maxx: u32) -> Option<(u32, u32)> {
+    fn east(&self, maxx: u32) -> Option<Location> {
         if self.x < maxx {
-            Some((self.x.saturating_add(1), self.y))
+            Some(Location {
+                x: self.x.saturating_add(1),
+                y: self.y,
+            })
         } else {
             None
         }
     }
 
-    fn west(&self) -> Option<(u32, u32)> {
+    fn west(&self) -> Option<Location> {
         if self.x > 0 {
-            Some((self.x.saturating_sub(1), self.y))
+            Some(Location {
+                x: self.x.saturating_sub(1),
+                y: self.y,
+            })
         } else {
             None
         }
-    }
-}
-
-impl From<(u32, u32)> for Location {
-    fn from((x, y): (u32, u32)) -> Self {
-        Location { x, y }
     }
 }
 
@@ -93,7 +104,7 @@ struct Map<'a> {
 }
 
 impl Map<'_> {
-    fn new<'a>(map: &'a [Vec<char>]) -> Map<'a> {
+    fn new(map: &[Vec<char>]) -> Map<'_> {
         let lower_right = Location {
             x: (if let Some(row) = map.first() {
                 row.len()
@@ -120,7 +131,7 @@ impl Map<'_> {
         loc: &Location,
         coming_from: Direction,
     ) -> Option<(Location, Direction)> {
-        match (self.get((loc.x, loc.y)), coming_from) {
+        match (self.get(*loc), coming_from) {
             // these brackets/no brackets shenanigans are caused by rust-fmt
             ('|', Direction::South) => {
                 loc.north().map(|north| (north.into(), Direction::South))
@@ -163,8 +174,8 @@ impl Map<'_> {
     }
 
     // given a location, return the char in the map
-    fn get(&self, loc: (u32, u32)) -> char {
-        self.map[loc.1 as usize][loc.0 as usize]
+    fn get(&self, loc: Location) -> char {
+        self.map[loc.y as usize][loc.x as usize]
     }
 
     // given the location, return a list of all positions that are connected to this location
@@ -210,23 +221,26 @@ impl Map<'_> {
     // or None. As every tile has only one next non-visited reachable tile when reached, we find
     // either a loop returning to start or end at the border of the map (which leads to a None result).
     fn find_loop(&self, start: (u32, u32)) -> Option<Vec<Location>> {
-            let start = start.into();
-            // this assumes that any reachable tile from S is part of the loop
-            if let Some((mut current, mut coming_from)) =
-                self.connected_to(&start).first()
+        let start = Location {
+            x: start.0,
+            y: start.1,
+        };
+        // this assumes that any reachable tile from S is part of the loop
+        if let Some((mut current, mut coming_from)) =
+            self.connected_to(&start).first()
+        {
+            let mut path = vec![start, current];
+            while let Some((next_loc, direction)) =
+                self.next_tile(&current, coming_from)
             {
-                let mut path = vec![start, current];
-                while let Some((next_loc, direction)) =
-                    self.next_tile(&current, coming_from)
-                {
-                    path.push(next_loc); // this is for part2
-                    if next_loc == start {
-                        return Some(path);
-                    }
-                    current = next_loc;
-                    coming_from = direction;
+                path.push(next_loc); // this is for part2
+                if next_loc == start {
+                    return Some(path);
                 }
+                current = next_loc;
+                coming_from = direction;
             }
+        }
 
         None
     }
@@ -261,11 +275,11 @@ mod tests {
 .....        
 ";
         let (start, v) = parse(input);
-        let map = Map {
-            lower_right: Location { x: 4, y: 4 },
-            map: &v,
+        let map = Map::new(&v);
+        let start = Location {
+            x: start.0,
+            y: start.1,
         };
-        let start = start.into();
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
         let expected = vec![
@@ -288,7 +302,7 @@ L|-JF
             lower_right: Location { x: 4, y: 4 },
             map: &v,
         };
-        let start = start.into();
+        let start = Location { x: start.0, y: start.1 };
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
         let expected = vec![
@@ -370,7 +384,6 @@ LJ...
         let steps = map.find_loop(start).unwrap().len() / 2;
         assert_eq!(steps, 8);
     }
-
 
     #[test]
     fn test_next_tile() {

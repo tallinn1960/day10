@@ -74,8 +74,7 @@ fn fun_name(input: &str) -> HashSet<(usize, usize)> {
     // possible from the tile, find the start tile along the way
     let graph = fun_name1(input, &mut start);
     // try each possible pipe symbol in turn and try to find the loop
-    let pipe_loop = fun_name2(graph, start);
-    pipe_loop
+    fun_name2(graph, start)
 }
 
 fn fun_name2(mut graph: Vec<Vec<[bool; 4]>>, start: (usize, usize)) -> HashSet<(usize, usize)> {

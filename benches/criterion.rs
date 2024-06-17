@@ -73,5 +73,18 @@ fn bench_p2_github(c: &mut Criterion) {
     g.finish()
 }
 
-criterion_group!(benches, bench_p1, bench_p1_github, bench_p2, bench_p2_github);
+fn bench_p2_github2(c: &mut Criterion) {
+    let mut g = c.benchmark_group("criterion");
+    g.bench_function("part2_github", |b| b.iter(|| day10::github2::p2()));
+    g.finish()
+}
+
+criterion_group!(
+    benches,
+    bench_p1,
+    bench_p1_github,
+    bench_p2,
+    bench_p2_github,
+    bench_p2_github2
+);
 criterion_main!(benches);
