@@ -12,8 +12,9 @@ pub fn p2(input: &str) -> u64 {
     let lines = input.lines().collect::<Vec<_>>();
     let map = Map::new(&lines);
     if let Some(_path) = map.find_loop() {
-        // apply shoelace algorithm on path
-        todo!("apply shoelace algorithm on path")
+        // calculate are by shoelace, apply picks theorem
+        // for the number of enclosed tiles
+        shoelace_with_picks_theorem(_path) as u64
     } else {
         0
     }
@@ -239,6 +240,19 @@ impl Map<'_> {
     }
 }
 
+fn shoelace_with_picks_theorem(path: Vec<Location>) -> u32 {
+    let mut result = 0;
+    let n = path.len();
+    for i in 0..n - 1 {
+        let xi = (path[i].x) as i64;
+        let yi = (path[i].y) as i64;
+        let x_next = (path[i + 1].x) as i64;
+        let y_next = (path[i + 1].y) as i64;
+        result += (yi + y_next) * (xi - x_next);
+    }
+    (((result / 2).abs()) - (path.len() as i64 - 1) / 2 + 1) as u32
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -297,6 +311,32 @@ mod tests {
         assert_eq!(steps, 4);
     }
 
+    #[test]
+    fn test_shoelace() {
+        let v = vec![".....", ".S-7.", ".|.|.", ".L-J.", "....."];
+        let map = Map::new(&v);
+        let steps = map.find_loop().unwrap();
+        let area = shoelace_with_picks_theorem(steps);
+        assert_eq!(area, 1);
+    }
+
+    #[test]
+    fn test_shoelace2() {
+        let input = "...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........";
+        let v = input.lines().collect::<Vec<_>>();
+        let map = Map::new(&v);
+        let steps = map.find_loop().unwrap();
+        let area = shoelace_with_picks_theorem(steps);
+        assert_eq!(area, 4);
+    }
     #[test]
     fn test_find_loop2() {
         let v = vec!["..F7.", ".FJ|.", "SJ.L7", "|F--J", "LJ..."];
