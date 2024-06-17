@@ -1,19 +1,29 @@
 pub mod github;
 
 pub fn p1(input: &str) -> u64 {
-    let lines = input.lines().collect::<Vec<_>>();
+    let (start_pos, lines) = parse(input);
     let map = Map::new(&lines);
-    if let Some(path) = map.find_loop() {
+    if let Some(path) = map.find_loop(start_pos) {
         (path.len() / 2) as u64
     } else {
         0
     }
 }
 
+fn parse(input: &str) -> ((u32, u32), Vec<Vec<char>>) {
+    let mut start_pos = (0,0);
+    let lines = input.lines()
+    .enumerate()
+    .inspect(| (y, chars)| if let Some(pos) = chars.find(|c| c == 'S') { start_pos = (pos as u32,*y as u32)})
+    .map(|(_, l)| l.chars().collect::<Vec<_>>())
+    .collect::<Vec<_>>();
+    (start_pos, lines)
+}
+
 pub fn p2(input: &str) -> u64 {
-    let lines = input.lines().collect::<Vec<_>>();
+    let (start_pos, lines) = parse(input);
     let map = Map::new(&lines);
-    if let Some(_path) = map.find_loop() {
+    if let Some(_path) = map.find_loop(start_pos) {
         // calculate are by shoelace, apply picks theorem
         // for the number of enclosed tiles
         shoelace_with_picks_theorem(_path) as u64
@@ -30,7 +40,6 @@ struct Location {
 }
 
 impl Location {
-    #[inline]
     fn north(&self) -> Option<(u32, u32)> {
         if self.y > 0 {
             Some((self.x, self.y.saturating_sub(1)))
@@ -39,7 +48,6 @@ impl Location {
         }
     }
 
-    #[inline]
     fn south(&self, maxy: u32) -> Option<(u32, u32)> {
         if self.y < maxy {
             Some((self.x, self.y.saturating_add(1)))
@@ -48,7 +56,6 @@ impl Location {
         }
     }
 
-    #[inline]
     fn east(&self, maxx: u32) -> Option<(u32, u32)> {
         if self.x < maxx {
             Some((self.x.saturating_add(1), self.y))
@@ -57,7 +64,6 @@ impl Location {
         }
     }
 
-    #[inline]
     fn west(&self) -> Option<(u32, u32)> {
         if self.x > 0 {
             Some((self.x.saturating_sub(1), self.y))
@@ -83,13 +89,13 @@ enum Direction {
 
 struct Map<'a> {
     lower_right: Location,
-    map: &'a [&'a str],
+    map: &'a [Vec<char>],
 }
 
 impl Map<'_> {
-    fn new<'a>(map: &'a [&'a str]) -> Map<'a> {
+    fn new<'a>(map: &'a [Vec<char>]) -> Map<'a> {
         let lower_right = Location {
-            x: (if let Some(&row) = map.first() {
+            x: (if let Some(row) = map.first() {
                 row.len()
             } else {
                 0
@@ -98,21 +104,6 @@ impl Map<'_> {
             y: (map.len() as u32).saturating_sub(1),
         };
         Map { lower_right, map }
-    }
-
-    // given an x,y map of chars of dimenson 0..MAXX, 0..MAXY find the x,y position of
-    // a cell with the char S in it, there is only one
-    fn find_start(&self) -> Option<Location> {
-        for y in 0..self.map.len() {
-            let line = self.map[y];
-            if let Some(x) = line.find('S') {
-                return Some(Location {
-                    x: x as u32,
-                    y: y as u32,
-                });
-            }
-        }
-        None
     }
 
     //  The chars are
@@ -124,7 +115,6 @@ impl Map<'_> {
     // F is a 90-degree bend connecting south and east.
     // . is ground; there is no pipe in this tile.
 
-    #[inline]
     fn next_tile(
         &self,
         loc: &Location,
@@ -173,12 +163,8 @@ impl Map<'_> {
     }
 
     // given a location, return the char in the map
-    #[inline]
     fn get(&self, loc: (u32, u32)) -> char {
-        self.map[loc.1 as usize]
-            .chars()
-            .nth(loc.0 as usize)
-            .unwrap_or('.')
+        self.map[loc.1 as usize][loc.0 as usize]
     }
 
     // given the location, return a list of all positions that are connected to this location
@@ -223,10 +209,8 @@ impl Map<'_> {
     // until you return to the start location, return the found path, if there is any,
     // or None. As every tile has only one next non-visited reachable tile when reached, we find
     // either a loop returning to start or end at the border of the map (which leads to a None result).
-    fn find_loop(&self) -> Option<Vec<Location>> {
-        // protect vs empty map
-        if let Some(start) = self.find_start() {
-            // protect vs isolated starting point
+    fn find_loop(&self, start: (u32, u32)) -> Option<Vec<Location>> {
+            let start = start.into();
             // this assumes that any reachable tile from S is part of the loop
             if let Some((mut current, mut coming_from)) =
                 self.connected_to(&start).first()
@@ -243,7 +227,7 @@ impl Map<'_> {
                     coming_from = direction;
                 }
             }
-        }
+
         None
     }
 }
@@ -269,23 +253,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_find_start() {
-        let v = vec!["S..", "...", "..."];
-        let map = Map {
-            lower_right: Location { x: 2, y: 2 },
-            map: &v,
-        };
-        let start = map.find_start();
-        assert_eq!(start, Some(Location { x: 0, y: 0 }));
-    }
-
-    #[test]
     fn test_connected_to() {
+        let input = ".....
+.S-7.
+.|.|.
+.L-J.
+.....        
+";
+        let (start, v) = parse(input);
         let map = Map {
             lower_right: Location { x: 4, y: 4 },
-            map: &[".....", ".S-7.", ".|.|.", ".L-J.", "....."],
+            map: &v,
         };
-        let start = Location { x: 1, y: 1 };
+        let start = start.into();
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
         let expected = vec![
@@ -297,11 +277,18 @@ mod tests {
 
     #[test]
     fn test_connected_to2() {
+        let input = "-L|F7
+7S-7|
+L|7||
+-L-J|
+L|-JF
+";
+        let (start, v) = parse(input);
         let map = Map {
             lower_right: Location { x: 4, y: 4 },
-            map: &["-L|F7", "7S-7|", "L|7||", "-L-J|", "L|-JF"],
+            map: &v,
         };
-        let start = Location { x: 1, y: 1 };
+        let start = start.into();
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
         let expected = vec![
@@ -313,17 +300,37 @@ mod tests {
 
     #[test]
     fn test_find_loop() {
-        let v = vec![".....", ".S-7.", ".|.|.", ".L-J.", "....."];
-        let map = Map::new(&v);
-        let steps = map.find_loop().unwrap().len() / 2;
+        let input = ".....
+.S-7.
+.|.|.
+.L-J.
+.....        
+";
+        let (start, v) = parse(input);
+        let map = Map {
+            lower_right: Location { x: 4, y: 4 },
+            map: &v,
+        };
+        let start = start.into();
+        let steps = map.find_loop(start).unwrap().len() / 2;
         assert_eq!(steps, 4);
     }
 
     #[test]
     fn test_shoelace() {
-        let v = vec![".....", ".S-7.", ".|.|.", ".L-J.", "....."];
-        let map = Map::new(&v);
-        let steps = map.find_loop().unwrap();
+        let input = ".....
+.S-7.
+.|.|.
+.L-J.
+.....        
+";
+        let (start, v) = parse(input);
+        let map = Map {
+            lower_right: Location { x: 4, y: 4 },
+            map: &v,
+        };
+        let start = start.into();
+        let steps = map.find_loop(start).unwrap();
         let area = shoelace_with_picks_theorem(steps);
         assert_eq!(area, 1);
     }
@@ -339,54 +346,41 @@ mod tests {
 .|..|.|..|.
 .L--J.L--J.
 ...........";
-        let v = input.lines().collect::<Vec<_>>();
+        let (start, v) = parse(input);
         let map = Map::new(&v);
-        let steps = map.find_loop().unwrap();
+        let start = start.into();
+        let steps = map.find_loop(start).unwrap();
         let area = shoelace_with_picks_theorem(steps);
         assert_eq!(area, 4);
     }
     #[test]
     fn test_find_loop2() {
-        let v = vec!["..F7.", ".FJ|.", "SJ.L7", "|F--J", "LJ..."];
-        let map = Map::new(&v);
-        let steps = map.find_loop().unwrap().len() / 2;
+        let input = "..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ...
+";
+        let (start, v) = parse(input);
+        let map = Map {
+            lower_right: Location { x: 4, y: 4 },
+            map: &v,
+        };
+        let start = start.into();
+        let steps = map.find_loop(start).unwrap().len() / 2;
         assert_eq!(steps, 8);
     }
 
-    #[test]
-    fn test_find_loop_empty() {
-        let v = Vec::new();
-        let map = Map::new(&v);
-        let path = map.find_loop();
-        assert_eq!(path, None);
-    }
-
-    #[test]
-    fn test_find_loop_isolated() {
-        let v = vec!["...", ".S.", "..."];
-        let map = Map::new(&v);
-        let path = map.find_loop();
-        assert_eq!(path, None);
-    }
-    #[test]
-    fn test_map_wih_no_loop() {
-        let v = vec![".7.", "-S-", ".|."];
-        let map = Map::new(&v);
-        let path = map.find_loop();
-        assert_eq!(path, None);
-    }
-
-    #[test]
-    fn test_map_wih_no_starting_point() {
-        let v = vec!["F-7", "|.|", "L-J"];
-        let map = Map::new(&v);
-        let path = map.find_loop();
-        assert_eq!(path, None);
-    }
 
     #[test]
     fn test_next_tile() {
-        let v = vec![".....", ".F-7.", ".|.|.", ".L-J.", "....."];
+        let input = ".....
+.F-7.
+.|.|.
+.L-J.
+.....        
+";
+        let (_, v) = parse(input);
         let map = Map::new(&v);
         let result = map
             .next_tile(&Location { x: 1, y: 1 }, Direction::South)
