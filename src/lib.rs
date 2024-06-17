@@ -2,21 +2,21 @@ use memchr::memchr;
 
 pub mod github;
 
-pub fn p1(input: &str) -> u64 {
+pub fn p1(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
-        (path.len() / 2) as u64
+        path.len() / 2 
     } else {
         0
     }
 }
 
-pub fn p2(input: &str) -> u64 {
+pub fn p2(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
         // calculate area by shoelace, apply picks theorem
         // for the number of enclosed tiles
-        shoelace_with_picks_theorem(path) as u64
+        shoelace_with_picks_theorem(path) 
     } else {
         0
     }
@@ -255,22 +255,24 @@ impl Map<'_> {
 
 /// this assumes that the last point in the list is
 /// the same as the first point in the list
-fn shoelace_with_picks_theorem(path: Vec<Location>) -> u32 {
+fn shoelace_with_picks_theorem(path: Vec<Location>) -> usize {
     let n = path.len();
     // shoelace for area
-    let area: i64 = (0..n - 1)
+    // we need to switch to isize arithmetic as area may
+    // become negative
+    let area: isize = (0..n - 1)
         .fold(0, |acc, i| {
             // avoid bound checking is safe here
-            let xi = unsafe { path.get_unchecked(i).x } as i64;
-            let yi = unsafe { path.get_unchecked(i).y } as i64;
-            let x_next = unsafe { path.get_unchecked(i + 1).x } as i64;
-            let y_next = unsafe { path.get_unchecked(i + 1).y } as i64;
+            let xi = unsafe { path.get_unchecked(i).x } as isize;
+            let yi = unsafe { path.get_unchecked(i).y } as isize;
+            let x_next = unsafe { path.get_unchecked(i + 1).x } as isize;
+            let y_next = unsafe { path.get_unchecked(i + 1).y } as isize;
             acc + (yi + y_next) * (xi - x_next)
         })
         .abs()
         / 2;
     // Pick's theorem
-    (area - (path.len() as i64 - 1) / 2 + 1) as u32
+    (area - (path.len() as isize - 1) / 2 + 1) as usize
 }
 
 #[cfg(test)]
