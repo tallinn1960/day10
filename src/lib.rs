@@ -1,3 +1,5 @@
+pub mod github;
+
 pub fn p1(input: &str) -> u64 {
     let lines = input.lines().collect::<Vec<_>>();
     let map = Map::new(&lines);
@@ -20,6 +22,7 @@ pub fn p2(input: &str) -> u64 {
     }
 }
 
+
 #[derive(Debug, PartialEq, Copy, Clone)]
 struct Location {
     x: u32,
@@ -27,6 +30,7 @@ struct Location {
 }
 
 impl Location {
+    #[inline]
     fn north(&self) -> Option<(u32, u32)> {
         if self.y > 0 {
             Some((self.x, self.y.saturating_sub(1)))
@@ -35,6 +39,7 @@ impl Location {
         }
     }
 
+    #[inline]
     fn south(&self, maxy: u32) -> Option<(u32, u32)> {
         if self.y < maxy {
             Some((self.x, self.y.saturating_add(1)))
@@ -43,6 +48,7 @@ impl Location {
         }
     }
 
+    #[inline]
     fn east(&self, maxx: u32) -> Option<(u32, u32)> {
         if self.x < maxx {
             Some((self.x.saturating_add(1), self.y))
@@ -51,6 +57,7 @@ impl Location {
         }
     }
 
+    #[inline]
     fn west(&self) -> Option<(u32, u32)> {
         if self.x > 0 {
             Some((self.x.saturating_sub(1), self.y))
@@ -123,42 +130,42 @@ impl Map<'_> {
         loc: &Location,
         coming_from: Direction,
     ) -> Option<(Location, Direction)> {
-        match self.get((loc.x, loc.y)) {
+        match (self.get((loc.x, loc.y)), coming_from) {
             // these brackets/no brackets shenanigans are caused by rust-fmt
-            '|' if coming_from == Direction::South => {
+            ('|', Direction::South) => {
                 loc.north().map(|north| (north.into(), Direction::South))
             }
-            '|' if coming_from == Direction::North => loc
+            ('|', Direction::North) => loc
                 .south(self.lower_right.y)
                 .map(|north| (north.into(), Direction::North)),
-            '-' if coming_from == Direction::West => loc
+            ('-', Direction::West) => loc
                 .east(self.lower_right.x)
                 .map(|north| (north.into(), Direction::West)),
-            '-' if coming_from == Direction::East => {
+            ('-', Direction::East) => {
                 loc.west().map(|north| (north.into(), Direction::East))
             }
-            'L' if coming_from == Direction::North => loc
+            ('L', Direction::North) => loc
                 .east(self.lower_right.x)
                 .map(|north| (north.into(), Direction::West)),
-            'L' if coming_from == Direction::East => {
+            ('L', Direction::East) => {
                 loc.north().map(|north| (north.into(), Direction::South))
             }
-            'J' if coming_from == Direction::North => {
+            ('J', Direction::North) => {
                 loc.west().map(|north| (north.into(), Direction::East))
             }
-            'J' if coming_from == Direction::West => {
+            ('J', Direction::West) => {
                 loc.north().map(|north| (north.into(), Direction::South))
             }
-            '7' if coming_from == Direction::South => {
+            ('7', Direction::South) => {
                 loc.west().map(|north| (north.into(), Direction::East))
             }
-            '7' if coming_from == Direction::West => loc
+            ('7', Direction::West) => loc
                 .south(self.lower_right.y)
                 .map(|north| (north.into(), Direction::North)),
-            'F' if coming_from == Direction::East => loc
+            ('F', Direction::East) => loc
                 .south(self.lower_right.y)
                 .map(|north| (north.into(), Direction::North)),
-            'F' if coming_from == Direction::South => loc
+            ('F', Direction::South) => loc
                 .east(self.lower_right.x)
                 .map(|north| (north.into(), Direction::West)),
             _ => None,
@@ -220,6 +227,7 @@ impl Map<'_> {
         // protect vs empty map
         if let Some(start) = self.find_start() {
             // protect vs isolated starting point
+            // this assumes that any reachable tile from S is part of the loop
             if let Some((mut current, mut coming_from)) =
                 self.connected_to(&start).first()
             {
