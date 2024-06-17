@@ -1,3 +1,5 @@
+use memchr::memchr;
+
 pub mod github;
 
 pub fn p1(input: &str) -> u64 {
@@ -25,24 +27,22 @@ fn parse(input: &str) -> Map {
     let mut start_pos = Location::default();
     let lines = input
         .lines()
+        .map(|l| l.as_bytes())
         .enumerate()
         .inspect(|&(y, chars)| {
-            if let Some(pos) = chars.find(|c| c == 'S') {
-                start_pos = Location {
-                    x: pos as u32,
-                    y: y as u32,
-                };
+            if let Some(pos) = memchr(b'S', chars) {
+                start_pos = Location { x: pos, y: y };
             }
         })
-        .map(|(_, l)| l.as_bytes())
+        .map(|(_, l)| l)
         .collect::<Vec<_>>();
     Map::new(start_pos, lines)
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 struct Location {
-    x: u32,
-    y: u32,
+    x: usize,
+    y: usize,
 }
 
 impl Location {
@@ -57,7 +57,7 @@ impl Location {
         }
     }
 
-    fn south(&self, maxy: u32) -> Option<Location> {
+    fn south(&self, maxy: usize) -> Option<Location> {
         if self.y < maxy {
             Some(Location {
                 x: self.x,
@@ -68,7 +68,7 @@ impl Location {
         }
     }
 
-    fn east(&self, maxx: u32) -> Option<Location> {
+    fn east(&self, maxx: usize) -> Option<Location> {
         if self.x < maxx {
             Some(Location {
                 x: self.x.saturating_add(1),
@@ -108,13 +108,13 @@ struct Map<'a> {
 impl Map<'_> {
     fn new<'a>(starting_pos: Location, map: Vec<&'a [u8]>) -> Map<'_> {
         let lower_right = Location {
-            x: (if let Some(row) = map.first() {
+            x: if let Some(&row) = map.first() {
                 row.len()
             } else {
                 0
-            } as u32)
-                .saturating_sub(1),
-            y: (map.len() as u32).saturating_sub(1),
+            }
+            .saturating_sub(1),
+            y: map.len().saturating_sub(1),
         };
         Map {
             lower_right,
