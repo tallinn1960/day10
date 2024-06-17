@@ -23,7 +23,7 @@ pub fn p2(input: &str) -> u64 {
 }
 
 /// parse the input into a starting point and a grid of bytes
-fn parse(input: &str) -> (Location, Vec<Vec<u8>>) {
+fn parse(input: &str) -> (Location, Vec<&[u8]>) {
     let mut start_pos = Location::default();
     let lines = input
         .lines()
@@ -36,7 +36,7 @@ fn parse(input: &str) -> (Location, Vec<Vec<u8>>) {
                 };
             }
         })
-        .map(|(_, l)| l.bytes().collect::<Vec<_>>())
+        .map(|(_, l)| l.as_bytes())
         .collect::<Vec<_>>();
     (start_pos, lines)
 }
@@ -103,12 +103,12 @@ enum Direction {
 
 struct Map<'a> {
     lower_right: Location,
-    map: &'a [Vec<u8>],
+    map: &'a [&'a [u8]],
     starting_pos: Location,
 }
 
 impl Map<'_> {
-    fn new(starting_pos: Location, map: &[Vec<u8>]) -> Map<'_> {
+    fn new<'a>(starting_pos: Location, map: &'a[&'a[u8]]) -> Map<'_> {
         let lower_right = Location {
             x: (if let Some(row) = map.first() {
                 row.len()
@@ -181,9 +181,12 @@ impl Map<'_> {
         }
     }
 
-    // given a location, return the char in the map
+    /// given a location, return the char in the map
+    /// not that this function does no bound checking
     fn get(&self, loc: Location) -> u8 {
-        self.map[loc.y as usize][loc.x as usize]
+        unsafe {
+            *(*self.map.get_unchecked(loc.y as usize)).get_unchecked(loc.x as usize)
+        }
     }
 
     // given the location, return a list of all positions that are connected to this location
@@ -262,7 +265,7 @@ fn shoelace_with_picks_theorem(path: Vec<Location>) -> u32 {
             let xi = unsafe { path.get_unchecked(i).x } as i64;
             let yi = unsafe { path.get_unchecked(i).y } as i64;
             let x_next = unsafe { path.get_unchecked(i + 1).x } as i64;
-            let y_next = unsafe { path.get_unchecked(i).y } as i64;
+            let y_next = unsafe { path.get_unchecked(i + 1).y } as i64;
             acc + (yi + y_next) * (xi - x_next)
         })
         .abs()
