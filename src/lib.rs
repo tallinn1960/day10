@@ -2,8 +2,8 @@ pub mod github;
 
 pub fn p1(input: &str) -> u64 {
     let (start_pos, lines) = parse(input);
-    let map = Map::new(&lines);
-    if let Some(path) = map.find_loop(start_pos) {
+    let map = Map::new(start_pos, &lines);
+    if let Some(path) = map.find_loop() {
         (path.len() / 2) as u64
     } else {
         0
@@ -12,8 +12,8 @@ pub fn p1(input: &str) -> u64 {
 
 pub fn p2(input: &str) -> u64 {
     let (start_pos, lines) = parse(input);
-    let map = Map::new(&lines);
-    if let Some(path) = map.find_loop(start_pos) {
+    let map = Map::new(start_pos, &lines);
+    if let Some(path) = map.find_loop() {
         // calculate area by shoelace, apply picks theorem
         // for the number of enclosed tiles
         shoelace_with_picks_theorem(path) as u64
@@ -104,10 +104,11 @@ enum Direction {
 struct Map<'a> {
     lower_right: Location,
     map: &'a [Vec<u8>],
+    starting_pos: Location,
 }
 
 impl Map<'_> {
-    fn new(map: &[Vec<u8>]) -> Map<'_> {
+    fn new(starting_pos: Location, map: &[Vec<u8>]) -> Map<'_> {
         let lower_right = Location {
             x: (if let Some(row) = map.first() {
                 row.len()
@@ -117,7 +118,11 @@ impl Map<'_> {
                 .saturating_sub(1),
             y: (map.len() as u32).saturating_sub(1),
         };
-        Map { lower_right, map }
+        Map {
+            lower_right,
+            map,
+            starting_pos,
+        }
     }
 
     //  The chars are
@@ -223,18 +228,18 @@ impl Map<'_> {
     /// until you return to the start location, return the found path, if there is any,
     /// or None. As every tile has only one next non-visited reachable tile when reached, we find
     /// either a loop returning to start or end at the border of the map (which leads to a None result).
-    fn find_loop(&self, start: Location) -> Option<Vec<Location>> {
+    fn find_loop(&self) -> Option<Vec<Location>> {
         // this assumes that any reachable tile from S is part of the loop
         if let Some((mut current, mut coming_from)) =
-            self.connected_to(&start).first()
+            self.connected_to(&self.starting_pos).first()
         {
-            let mut path = vec![start, current];
+            let mut path = vec![self.starting_pos, current];
             while let Some((next_loc, direction)) =
                 self.next_tile(&current, coming_from)
             {
                 // this is for part2 - the funny thing is, this is faster than counting steps
                 path.push(next_loc);
-                if next_loc == start {
+                if next_loc == self.starting_pos {
                     return Some(path);
                 }
                 current = next_loc;
@@ -253,10 +258,11 @@ fn shoelace_with_picks_theorem(path: Vec<Location>) -> u32 {
     // shoelace for area
     let area: i64 = (0..n - 1)
         .fold(0, |acc, i| {
-            let xi = (path[i].x) as i64;
-            let yi = (path[i].y) as i64;
-            let x_next = (path[i + 1].x) as i64;
-            let y_next = (path[i + 1].y) as i64;
+            // avoid bound checking is safe here
+            let xi = unsafe { path.get_unchecked(i).x } as i64;
+            let yi = unsafe { path.get_unchecked(i).y } as i64;
+            let x_next = unsafe { path.get_unchecked(i + 1).x } as i64;
+            let y_next = unsafe { path.get_unchecked(i).y } as i64;
             acc + (yi + y_next) * (xi - x_next)
         })
         .abs()
@@ -281,7 +287,7 @@ mod tests {
 .....        
 ";
         let (start, v) = parse(input);
-        let map = Map::new(&v);
+        let map = Map::new(start, &v);
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
         let expected = vec![
@@ -300,10 +306,7 @@ L|7||
 L|-JF
 ";
         let (start, v) = parse(input);
-        let map = Map {
-            lower_right: Location { x: 4, y: 4 },
-            map: &v,
-        };
+        let map = Map::new(start, &v);
 
         let connected = map.connected_to(&start);
         assert_eq!(connected.len(), 2);
@@ -323,12 +326,8 @@ L|-JF
 .....        
 ";
         let (start, v) = parse(input);
-        let map = Map {
-            lower_right: Location { x: 4, y: 4 },
-            map: &v,
-        };
-        let start = start;
-        let steps = map.find_loop(start).unwrap().len() / 2;
+        let map = Map::new(start, &v);
+        let steps = map.find_loop().unwrap().len() / 2;
         assert_eq!(steps, 4);
     }
 
@@ -341,12 +340,8 @@ L|-JF
 .....        
 ";
         let (start, v) = parse(input);
-        let map = Map {
-            lower_right: Location { x: 4, y: 4 },
-            map: &v,
-        };
-        let start = start;
-        let steps = map.find_loop(start).unwrap();
+        let map = Map::new(start, &v);
+        let steps = map.find_loop().unwrap();
         let area = shoelace_with_picks_theorem(steps);
         assert_eq!(area, 1);
     }
@@ -363,9 +358,8 @@ L|-JF
 .L--J.L--J.
 ...........";
         let (start, v) = parse(input);
-        let map = Map::new(&v);
-        let start = start;
-        let steps = map.find_loop(start).unwrap();
+        let map = Map::new(start, &v);
+        let steps = map.find_loop().unwrap();
         let area = shoelace_with_picks_theorem(steps);
         assert_eq!(area, 4);
     }
@@ -378,12 +372,8 @@ SJ.L7
 LJ...
 ";
         let (start, v) = parse(input);
-        let map = Map {
-            lower_right: Location { x: 4, y: 4 },
-            map: &v,
-        };
-        let start = start;
-        let steps = map.find_loop(start).unwrap().len() / 2;
+        let map = Map::new(start, &v);
+        let steps = map.find_loop().unwrap().len() / 2;
         assert_eq!(steps, 8);
     }
 
@@ -395,8 +385,8 @@ LJ...
 .L-J.
 .....        
 ";
-        let (_, v) = parse(input);
-        let map = Map::new(&v);
+        let (start, v) = parse(input);
+        let map = Map::new(start, &v);
         let result = map
             .next_tile(&Location { x: 1, y: 1 }, Direction::South)
             .unwrap();
