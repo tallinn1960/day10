@@ -1,7 +1,14 @@
 use memchr::memchr;
+extern crate link_cplusplus;
 
 pub mod github;
 
+pub mod ffi {
+    #[link(name = "day10cpp", kind = "static")]
+    extern "C" {
+        pub fn solve_ffi(bytes: *const u8, size: usize) -> u64;
+    }
+}
 pub fn p1(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
@@ -138,38 +145,39 @@ impl Map<'_> {
             }
             (b'|', Direction::North) => loc
                 .south(self.lower_right.y)
-                .map(|north| (north, Direction::North)),
+                .map(|south| (south, Direction::North)),
             (b'-', Direction::West) => loc
                 .east(self.lower_right.x)
-                .map(|north| (north, Direction::West)),
+                .map(|east| (east, Direction::West)),
             (b'-', Direction::East) => {
-                loc.west().map(|north| (north, Direction::East))
+                loc.west().map(|west| (west, Direction::East))
             }
             (b'L', Direction::North) => loc
                 .east(self.lower_right.x)
-                .map(|north| (north, Direction::West)),
+                .map(|east| (east, Direction::West)),
             (b'L', Direction::East) => {
                 loc.north().map(|north| (north, Direction::South))
             }
             (b'J', Direction::North) => {
-                loc.west().map(|north| (north, Direction::East))
+                loc.west().map(|west| (west, Direction::East))
             }
             (b'J', Direction::West) => {
                 loc.north().map(|north| (north, Direction::South))
             }
             (b'7', Direction::South) => {
-                loc.west().map(|north| (north, Direction::East))
+                loc.west().map(|west| (west, Direction::East))
             }
             (b'7', Direction::West) => loc
                 .south(self.lower_right.y)
-                .map(|north| (north, Direction::North)),
+                .map(|south| (south, Direction::North)),
             (b'F', Direction::East) => loc
                 .south(self.lower_right.y)
-                .map(|north| (north, Direction::North)),
+                .map(|south| (south, Direction::North)),
             (b'F', Direction::South) => loc
                 .east(self.lower_right.x)
-                .map(|north| (north, Direction::West)),
-            _ => None,
+                .map(|east| (east, Direction::West)),
+            // this should not happen
+            _ => unreachable!("you cannot be here!"),
         }
     }
 
@@ -224,10 +232,9 @@ impl Map<'_> {
     /// The function assumes that there is a loop and tries the first tile
     /// leading away from the starting point only to find it.
     fn find_loop(&self) -> Option<Vec<Location>> {
+        let mut path_starts = self.connected_to(&self.starting_pos).into_iter();
         // this assumes that any reachable tile from S is part of the loop
-        if let Some((mut current, mut coming_from)) =
-            self.connected_to(&self.starting_pos).first()
-        {
+        while let Some((mut current, mut coming_from)) = path_starts.next() {
             let mut path = vec![self.starting_pos, current];
             while let Some((next_loc, direction)) =
                 self.next_tile(&current, coming_from)
@@ -258,7 +265,6 @@ fn shoelace_with_picks_theorem(path: Vec<Location>) -> usize {
     // shoelace for area
     // we need to switch to isize arithmetic as area may
     // become negative
-    // TODO: check if this works with unsigned ints and wrap-around
     let area = (0..n - 1)
         .fold(0, |acc, i| {
             // avoid bound checking is safe here

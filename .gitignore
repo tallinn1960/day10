@@ -1,3 +1,6 @@
 /target
 .DS_Store
 flamegraph.svg
+.cache/
+build/
+*.dSYM/

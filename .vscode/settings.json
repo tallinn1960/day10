@@ -1,0 +1,5 @@
+{
+    "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
+    "C_Cpp.errorSquiggles": "enabled"
+}

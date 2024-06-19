@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.5)
+project(trap_cpp CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+add_library(day10cpp STATIC p2.cpp)
+install(TARGETS day10cpp DESTINATION .)
