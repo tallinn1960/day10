@@ -132,6 +132,8 @@ impl Map<'_> {
 
     /// Find the next tile to go to from a Location,
     /// coming from a direction not to return to.
+    /// Return None if the next tile to go is not connected
+    /// (we hit a wall then), or is beyond the border of the map.
     fn next_tile(
         &self,
         loc: &Location,
@@ -179,6 +181,20 @@ impl Map<'_> {
             // this should not happen
             _ => unreachable!("you cannot be here!"),
         }
+        .filter(|v| match v.1 { // check if we ran against a wall
+            Direction::North => {
+                memchr(self.get(v.0), &[b'S', b'|', b'L', b'J']).is_some()
+            }
+            Direction::South => {
+                memchr(self.get(v.0), &[b'S', b'|', b'7', b'F']).is_some()
+            }
+            Direction::East => {
+                memchr(self.get(v.0), &[b'S', b'-', b'L', b'F']).is_some()
+            }
+            Direction::West => {
+                memchr(self.get(v.0), &[b'S', b'-', b'7', b'J']).is_some()
+            }
+        })
     }
 
     /// Given a location, return the char in the map.
@@ -229,13 +245,13 @@ impl Map<'_> {
     /// The returned sequence of locations include the starting point as
     /// the first and last location in the list. It is a closed polygon, but with
     /// all integer coordinates in the list, not just the edges.
-    /// The function assumes that there is a loop and tries the first tile
-    /// leading away from the starting point only to find it.
     fn find_loop(&self) -> Option<Vec<Location>> {
         let mut path_starts = self.connected_to(&self.starting_pos).into_iter();
-        // this assumes that any reachable tile from S is part of the loop
+        // try all tiles connected to S for a loop (not all connected tiles to S may be part of a loop)
         while let Some((mut current, mut coming_from)) = path_starts.next() {
             let mut path = vec![self.starting_pos, current];
+            // follow the path until we reach S again or bump into a wall or
+            // the border of the map
             while let Some((next_loc, direction)) =
                 self.next_tile(&current, coming_from)
             {
