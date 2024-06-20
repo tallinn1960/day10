@@ -22,3 +22,6 @@ I am pretty sure that more efficient C++ solutions than those given here are pos
 
 The Rust compiler on Windows 11 on ARM produces slower code for the Rust-Github-Solution and substantially slower code for my Rust solutions. But both C++ solutions are substantially worse than the Rust solutions on all platforms tried (macOS, Ubunutu 24.04, Window 11 on ARM - Linux and Windows running in a Parallels VM on a Mac mini M1)
 
+## Note for Windows users
+
+Make sure that cmake is in your %PATH%. There is a cmake coming with MS Visual Studio 2022 Community Edition. It's in `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin`.
