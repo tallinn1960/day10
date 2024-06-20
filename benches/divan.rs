@@ -14,6 +14,14 @@ fn part1() {
 }
 
 #[divan::bench]
+fn part1_cpp() {
+    day10::ffi::p1_cpp(divan::black_box(include_str!(
+        "../input.txt",
+    )));
+}
+
+
+#[divan::bench]
 fn part2() {
     p2(divan::black_box(include_str!(
         "../input.txt",

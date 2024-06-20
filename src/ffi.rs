@@ -8,6 +8,10 @@ extern "C" {
     pub fn run_p1(bytes: *const u8, size: usize) -> u64;
 }
 
+pub fn p1_cpp(input: &str) -> u64 {
+    unsafe {run_p1(input.as_ptr(), input.len())}
+}
+
 #[cfg(test)]
 mod tests {
     use std::{fs::File, io::Read};
