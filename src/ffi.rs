@@ -29,7 +29,8 @@ L---JF-JLJIIIIFJLJJ7
 |FFJF7L7F-JF7IIL---7
 7-L-JL7||F7|L7F-7F7|
 L.L7LFJ|||||FJL7||LJ
-L7JLJL-JLJLJL--JLJ.L";
+L7JLJL-JLJLJL--JLJ.L
+";
         let result = unsafe {run_p1(input.as_ptr(), input.len())};
         assert_eq!(result, 80);
     }

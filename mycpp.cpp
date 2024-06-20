@@ -59,16 +59,45 @@ public:
 enum Direction { NORTH, SOUTH, WEST, EAST };
 
 class Map {
-    const std::vector<std::span<const char>> m_lines;
-    const Location m_start;
-    const size_t m_width;
-    const size_t m_height;
+    std::vector<std::span<const char>> m_lines;
+    Location m_start;
+    size_t m_width;
+    size_t m_height;
 
     // private constructor, Map will be parsed from input
     Map(std::vector<std::span<const char>> lines, size_t width, Location start)
         : m_lines(lines), m_width(width), m_start(start),
           m_height(lines.size()) {}
 
+    Map(const Map &other)
+        : m_lines(other.m_lines), m_width(other.m_width),
+          m_start(other.m_start), m_height(other.m_height) {}
+
+    Map(Map &&other)
+        : m_lines(std::move(other.m_lines)), m_width(other.m_width),
+          m_start(other.m_start), m_height(other.m_height) {}
+
+    Map &operator=(Map &&other) {
+        if (this == &other) {
+            return *this;
+        }
+        m_lines = std::move(other.m_lines);
+        m_width = other.m_width;
+        m_start = other.m_start;
+        m_height = other.m_height;
+        return *this;
+    }
+
+    Map &operator=(const Map &other) {
+        if (this == &other) {
+            return *this;
+        }
+        m_lines = other.m_lines;
+        m_width = other.m_width;
+        m_start = other.m_start;
+        m_height = other.m_height;
+        return *this;
+    }
     // symbols on the tiles connect them to each other
     // | connects up and down
     // - connects left and right
@@ -213,28 +242,34 @@ public:
         // It is really hard in c++ to structure the input
         // without copying it. Let's ask Copilot for help.
         // Create a vector of spans for each line.
-        auto start_of_current_line = 0;
         size_t running_width = SIZE_MAX;
         std::vector<std::span<const char>> lines;
         std::optional<Location> start_location = std::nullopt;
-        for (size_t i = 0; i < input.size(); i++) {
-            if (input[i] == '\n') {
-                auto line = input.subspan(start_of_current_line,
-                                          i - start_of_current_line);
-
-                if (!start_location.has_value()) {
-                    look_for_startposition(line, start_location, lines);
-                }
-
-                lines.push_back(line);
-                start_of_current_line = i + 1;
-                running_width = std::min(
-                                    running_width, line.size()); // don't count the newline
-            }
-        }
-        if (start_of_current_line < input.size()) {
+        auto start_of_current_line = 0;
+        char *start_of_line_ptr = (char *) input.data();
+        char *end_of_line_ptr = (char *) memchr(input.data(), '\n', input.size());
+        while (end_of_line_ptr != nullptr) {
+            auto i = end_of_line_ptr - start_of_line_ptr;
             auto line = input.subspan(start_of_current_line,
-                                      input.size() - start_of_current_line - 1);
+                                      i);
+
+            if (!start_location.has_value()) {
+                look_for_startposition(line, start_location, lines);
+            }
+
+            lines.push_back(line);
+            start_of_current_line += i + 1;
+            start_of_line_ptr = end_of_line_ptr + 1;
+            end_of_line_ptr = (char *) memchr(start_of_line_ptr, '\n',
+                                              input.size() - (end_of_line_ptr - input.data()));
+
+            running_width = std::min(
+                                running_width, line.size()); // don't count the newline
+        }
+        auto i = input.size() - start_of_current_line;
+        if (i > 0) // last line does not end with newline (or is empty)
+        {
+            auto line = input.subspan(start_of_current_line, i);
             if (!start_location.has_value()) {
                 look_for_startposition(line, start_location, lines);
             }
