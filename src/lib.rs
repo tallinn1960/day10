@@ -2,13 +2,8 @@ use memchr::memchr;
 extern crate link_cplusplus;
 
 pub mod github;
+pub mod ffi;
 
-pub mod ffi {
-    #[link(name = "day10cpp", kind = "static")]
-    extern "C" {
-        pub fn solve_ffi(bytes: *const u8, size: usize) -> u64;
-    }
-}
 pub fn p1(input: &str) -> usize {
     let map = parse(input);
     if let Some(path) = map.find_loop() {
@@ -134,7 +129,7 @@ impl Map<'_> {
     /// coming from a direction not to return to.
     /// Return None if the next tile to go is not connected
     /// (we hit a wall then), or is beyond the border of the map.
-    fn next_tile(
+    fn next_location(
         &self,
         loc: &Location,
         coming_from: Direction,
@@ -253,7 +248,7 @@ impl Map<'_> {
             // follow the path until we reach S again or bump into a wall or
             // the border of the map
             while let Some((next_loc, direction)) =
-                self.next_tile(&current, coming_from)
+                self.next_location(&current, coming_from)
             {
                 // this is for part2 - the funny thing is, this is faster
                 // than counting steps
@@ -408,51 +403,51 @@ LJ...
 ";
         let map = parse(input);
         let result = map
-            .next_tile(&Location { x: 1, y: 1 }, Direction::South)
+            .next_location(&Location { x: 1, y: 1 }, Direction::South)
             .unwrap();
         assert_eq!(result, (Location { x: 2, y: 1 }, Direction::West));
         let result = map
-            .next_tile(&Location { x: 1, y: 1 }, Direction::East)
+            .next_location(&Location { x: 1, y: 1 }, Direction::East)
             .unwrap();
         assert_eq!(result, (Location { x: 1, y: 2 }, Direction::North));
         let result = map
-            .next_tile(&Location { x: 2, y: 1 }, Direction::West)
+            .next_location(&Location { x: 2, y: 1 }, Direction::West)
             .unwrap();
         assert_eq!(result, (Location { x: 3, y: 1 }, Direction::West));
         let result = map
-            .next_tile(&Location { x: 2, y: 1 }, Direction::East)
+            .next_location(&Location { x: 2, y: 1 }, Direction::East)
             .unwrap();
         assert_eq!(result, (Location { x: 1, y: 1 }, Direction::East));
         let result = map
-            .next_tile(&Location { x: 3, y: 1 }, Direction::West)
+            .next_location(&Location { x: 3, y: 1 }, Direction::West)
             .unwrap();
         assert_eq!(result, (Location { x: 3, y: 2 }, Direction::North));
         let result = map
-            .next_tile(&Location { x: 3, y: 1 }, Direction::South)
+            .next_location(&Location { x: 3, y: 1 }, Direction::South)
             .unwrap();
         assert_eq!(result, (Location { x: 2, y: 1 }, Direction::East));
         let result = map
-            .next_tile(&Location { x: 1, y: 2 }, Direction::North)
+            .next_location(&Location { x: 1, y: 2 }, Direction::North)
             .unwrap();
         assert_eq!(result, (Location { x: 1, y: 3 }, Direction::North));
         let result = map
-            .next_tile(&Location { x: 1, y: 2 }, Direction::South)
+            .next_location(&Location { x: 1, y: 2 }, Direction::South)
             .unwrap();
         assert_eq!(result, (Location { x: 1, y: 1 }, Direction::South));
         let result = map
-            .next_tile(&Location { x: 1, y: 3 }, Direction::North)
+            .next_location(&Location { x: 1, y: 3 }, Direction::North)
             .unwrap();
         assert_eq!(result, (Location { x: 2, y: 3 }, Direction::West));
         let result = map
-            .next_tile(&Location { x: 1, y: 3 }, Direction::East)
+            .next_location(&Location { x: 1, y: 3 }, Direction::East)
             .unwrap();
         assert_eq!(result, (Location { x: 1, y: 2 }, Direction::South));
         let result = map
-            .next_tile(&Location { x: 3, y: 3 }, Direction::North)
+            .next_location(&Location { x: 3, y: 3 }, Direction::North)
             .unwrap();
         assert_eq!(result, (Location { x: 2, y: 3 }, Direction::East));
         let result = map
-            .next_tile(&Location { x: 3, y: 3 }, Direction::West)
+            .next_location(&Location { x: 3, y: 3 }, Direction::West)
             .unwrap();
         assert_eq!(result, (Location { x: 3, y: 2 }, Direction::South));
     }
