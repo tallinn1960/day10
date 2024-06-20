@@ -245,11 +245,11 @@ public:
         size_t running_width = SIZE_MAX;
         std::vector<std::span<const char>> lines;
         std::optional<Location> start_location = std::nullopt;
-        auto start_of_current_line = 0;
+        size_t start_of_current_line = 0;
         char *start_of_line_ptr = (char *) input.data();
         char *end_of_line_ptr = (char *) memchr(input.data(), '\n', input.size());
         while (end_of_line_ptr != nullptr) {
-            auto i = end_of_line_ptr - start_of_line_ptr;
+            size_t i = end_of_line_ptr - start_of_line_ptr;
             auto line = input.subspan(start_of_current_line,
                                       i);
 
@@ -258,7 +258,7 @@ public:
             }
 
             lines.push_back(line);
-            start_of_current_line += i + 1;
+            start_of_current_line = start_of_current_line + i + 1;
             start_of_line_ptr = end_of_line_ptr + 1;
             end_of_line_ptr = (char *) memchr(start_of_line_ptr, '\n',
                                               input.size() - (end_of_line_ptr - input.data()));

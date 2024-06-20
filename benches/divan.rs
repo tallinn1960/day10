@@ -7,7 +7,7 @@ fn main() {
 }
 
 #[divan::bench]
-fn part1() {
+fn part1_rust() {
     p1(divan::black_box(include_str!(
         "../input.txt",
     )));
@@ -22,14 +22,21 @@ fn part1_cpp() {
 
 
 #[divan::bench]
-fn part2() {
+fn part2_rust() {
     p2(divan::black_box(include_str!(
         "../input.txt",
     )));
 }
 
 #[divan::bench]
-fn part2_github() {
+fn part2_rust_github() {
+    day10::github::p2(divan::black_box(include_str!(
+        "../input.txt",
+    )));
+}
+
+#[divan::bench]
+fn part2_cpp_yt() {
     day10::github::p2(divan::black_box(include_str!(
         "../input.txt",
     )));

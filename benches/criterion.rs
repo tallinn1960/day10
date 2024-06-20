@@ -7,7 +7,7 @@ use std::io::Read;
 
 fn bench_p1(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("part1", |b| {
+    g.bench_function("part1_rust", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
@@ -24,7 +24,7 @@ fn bench_p1(c: &mut Criterion) {
 
 fn bench_p1_cpp(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("part1_mycpp", |b| {
+    g.bench_function("part1_cpp", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
@@ -42,7 +42,7 @@ fn bench_p1_cpp(c: &mut Criterion) {
 
 fn bench_p2(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("part2", |b| {
+    g.bench_function("part2_rust", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
@@ -60,7 +60,7 @@ fn bench_p2(c: &mut Criterion) {
 
 fn bench_p2_github(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("part2_github", |b| {
+    g.bench_function("part2_rust_github", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
@@ -77,7 +77,7 @@ fn bench_p2_github(c: &mut Criterion) {
 
 fn bench_p2_cpp(c: &mut Criterion) {
     let mut g = c.benchmark_group("criterion");
-    g.bench_function("part2_cpp", |b| {
+    g.bench_function("part2_cpp_yt", |b| {
         b.iter_batched(
             || {
                 let mut f = File::open("input.txt").expect("can't open file");
