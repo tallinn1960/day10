@@ -15,6 +15,7 @@ class Location {
 
 public:
     Location(size_t x, size_t y) : m_x(x), m_y(y) {}
+    Location(const Location &other) : m_x(other.m_x), m_y(other.m_y) {}
 
     const size_t &x = m_x;
     const size_t &y = m_y;
