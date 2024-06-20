@@ -1,10 +1,13 @@
 #include <cctype>
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <optional>
 #include <span>
 #include <string>
 #include <tuple>
 #include <vector>
+#include <cstring>
 
 class Location {
     size_t m_x;
@@ -12,7 +15,6 @@ class Location {
 
 public:
     Location(size_t x, size_t y) : m_x(x), m_y(y) {}
-    Location(const Location &other) : m_x(other.m_x), m_y(other.m_y) {}
 
     const size_t &x = m_x;
     const size_t &y = m_y;
@@ -211,7 +213,7 @@ public:
         // without copying it. Let's ask Copilot for help.
         // Create a vector of spans for each line.
         auto start_of_current_line = 0;
-        size_t running_width = SIZE_T_MAX;
+        size_t running_width = SIZE_MAX;
         std::vector<std::span<const char>> lines;
         std::optional<Location> start_location = std::nullopt;
         for (size_t i = 0; i < input.size(); i++) {
@@ -268,7 +270,6 @@ public:
                 path.push_back(next_tile);
                 next = next_location(next_tile, next_direction);
             }
-            printf("Pathlen: %d\n", path.size());
         }
         return std::nullopt;
     }
