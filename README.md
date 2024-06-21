@@ -5,13 +5,13 @@ This repository contains solutions to the AoC 2023 day 10 problem in Rust and C+
 
 The solutions are
 
-| Bench mark name | Source |
-------------------|---------
-| **criterion/part1_rust** | Own solution for part 1 in Rust |
-| **criterion/part1_cpp** | Own solution in C++ |
-| criterion/part1_swift | Own solution in Swift (only on macOS) |
-| criterion/part2 | Own solution for part 2 in Rust |
-| criterion/part2_github | Rust Solution taken from Github |
+| Bench mark name | Source | Benchmark (Criterion/Mac mini M1)|
+------------------|---------|-|
+| **criterion/part1_rust** | Own solution for part 1 in Rust |55 µs|
+| **criterion/part1_cpp** | Own solution in C++ | 224 µs|
+| criterion/part1_swift | Own solution in Swift (only on macOS) | 44 ms|
+| criterion/part2 | Own solution for part 2 in Rust |74 µs|
+| criterion/part2_github | Rust Solution taken from Github |89 µs|
 
 Rust compiler version 1.79.0, clang 15/Swift 5.10 (macOS), gcc-12 (Linux), msvc Community 2022 (Windows 11 on ARM)
 
