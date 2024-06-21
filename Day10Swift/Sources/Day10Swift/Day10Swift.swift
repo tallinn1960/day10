@@ -2,12 +2,9 @@
 // https://docs.swift.org/swift-book
 import Foundation
 
-struct Location {
+struct Location: Equatable, Hashable {
   private(set) var x: Int
   private(set) var y: Int
-}
-
-extension Location {
   func south() -> Location? {
     return Location(x: x, y: y + 1)
   }
@@ -20,15 +17,9 @@ extension Location {
   func west() -> Location? {
     return x > 0 ? Location(x: x - 1, y: y) : nil
   }
-}
-
-extension Location: Equatable {
   static func == (lhs: Location, rhs: Location) -> Bool {
     return lhs.x == rhs.x && lhs.y == rhs.y
   }
-}
-
-extension Location: Hashable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(x)
     hasher.combine(y)
@@ -37,9 +28,20 @@ extension Location: Hashable {
 
 enum Direction: CaseIterable {
   case north
-  case east 
+  case east
   case south
-  case west 
+  case west
+}
+
+enum Tile: UInt8 { // values are ASCII values for the map symbols
+  case pipe = 124
+  case dash = 45
+  case L = 76
+  case J = 74
+  case seven = 55
+  case F = 70
+  case S = 83
+  case dot = 46
 }
 
 struct Map {
@@ -47,28 +49,18 @@ struct Map {
   private(set) var startLocaton: Location
   private(set) var width: Int
   private(set) var height: Int
-}
 
-extension Map {
-  func get(_ location: Location) -> Tile {
-    return Tile(rawValue: lines[location.y * (width + 1) + location.x])!
+  func get(_ location: Location) -> Tile? {
+    guard location.x < width && location.y < height else {
+      return nil
+    }
+    return Tile(rawValue: lines[location.y * (width + 1) + location.x])
   }
-}
 
-enum Tile: UInt8 {
-    case pipe = 124
-    case dash = 45
-    case L = 76
-    case J = 74
-    case seven = 55
-    case F = 70
-    case S = 83
-    case dot = 46
-}
-
-extension Map {
   func nextLocation(from: Location, cameFrom: Direction) -> (Location, Direction)? {
-    let tile = get(from)
+    guard let tile = get(from) else {
+      return nil
+    }
     var result: (Location, Direction)?
     switch tile {
     case .pipe where cameFrom == .north:
@@ -137,9 +129,6 @@ extension Map {
     return nil
   }
 
-}
-
-extension Map {
   func connected(to location: Location) -> [(Location, Direction)] {
     var result: [(Location, Direction)] = []
     if let next = location.north(), [.S, .pipe, .F, .seven].contains(get(next)) {
@@ -156,26 +145,24 @@ extension Map {
     }
     return result
   }
-}
 
-extension Map {
-    func findLoop() -> [Location]? {
-        let possible_starts = connected(to: startLocaton)
-        for (next, direction) in possible_starts {
-            var visited: Array<Location> = [startLocaton, next]
-            var current = next
-            var cameFrom = direction
-            while let (next, direction) = nextLocation(from: current, cameFrom: cameFrom) {
-                if visited.contains(next) {
-                    return visited
-                }
-                visited.append(next)
-                current = next
-                cameFrom = direction
-            }
+  func findLoop() -> [Location]? {
+    let possible_starts = connected(to: startLocaton)
+    for (next, direction) in possible_starts {
+      var visited: [Location] = [startLocaton, next]
+      var current = next
+      var cameFrom = direction
+      while let (next, direction) = nextLocation(from: current, cameFrom: cameFrom) {
+        if visited.contains(next) {
+          return visited
         }
-        return nil
+        visited.append(next)
+        current = next
+        cameFrom = direction
+      }
     }
+    return nil
+  }
 }
 
 func parse(_ lines: Data) -> Map {
@@ -188,17 +175,17 @@ func parse(_ lines: Data) -> Map {
 
 func p1(_ input: Data) -> Int {
   let map = parse(input)
-  return (map.findLoop()?.count ?? 0 ) / 2
+  return (map.findLoop()?.count ?? 0) / 2
 }
 
 func p1_from_file(filename: String) -> Int {
   let lines = try! Data(contentsOf: URL(fileURLWithPath: filename))
   let map = parse(lines)
-  return (map.findLoop()?.count ?? 0 ) / 2
+  return (map.findLoop()?.count ?? 0) / 2
 }
 
 // declare c abi to p1
 @_cdecl("p1")
 public func p1(_ a: UnsafeMutablePointer<UInt8>?, _ b: Int) -> Int {
   return p1(Data(bytesNoCopy: a!, count: b, deallocator: .none))
-}   
+}
