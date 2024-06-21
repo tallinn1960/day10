@@ -1,5 +1,7 @@
 # "Zero cost abtractions" in Rust, C++ and Swift 
-## A performance comparison by benchmark
+> "When it comes to performance, don’t trust your intuition: measure" 
+Bjarne Stroustrup, "A tour of C++", 3rd edition
+
 
 This repository contains solutions to the AoC 2023 day 10 problem in Rust and C++.
 
