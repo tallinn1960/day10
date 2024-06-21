@@ -1,13 +1,11 @@
+
 extern crate link_cplusplus;
 
 #[link(name = "day10cpp", kind = "static")]
 extern "C" {
-    pub fn solve_ffi(bytes: *const u8, size: usize) -> u64;
-}
-#[link(name = "day10cpp", kind = "static")]
-extern "C" {
     pub fn run_p1(bytes: *const u8, size: usize) -> u64;
 }
+
 
 #[cfg(test)]
 pub fn p1_cpp(input: &str) -> u64 {
@@ -18,7 +16,7 @@ pub fn p1_cpp(input: &str) -> u64 {
 mod tests {
     use std::{fs::File, io::Read};
 
-    use crate::ffi::run_p1;
+    use crate::day10cpp::run_p1;
 
     #[test]
     fn test_cpp_sample() {

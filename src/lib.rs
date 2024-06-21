@@ -1,7 +1,9 @@
 use memchr::memchr;
 
 pub mod github;
-pub mod ffi;
+pub mod day10cpp;
+#[cfg(target_os = "macos")]
+pub mod day10swift;
 
 pub fn p1(input: &str) -> usize {
     let map = parse(input);

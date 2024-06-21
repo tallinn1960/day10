@@ -13,12 +13,21 @@ fn part1_rust() {
     )));
 }
 
+#[cfg(target_os = "macos")]
+#[divan::bench]
+fn swift() {
+    let input = divan::black_box(include_str!(
+        "../input.txt",
+    ));
+    unsafe {day10::day10swift::p1(input.as_ptr(), input.len())};
+}
+
 #[divan::bench]
 fn part1_cpp() {
     let input = divan::black_box(include_str!(
         "../input.txt",
     ));
-    unsafe {day10::ffi::run_p1(input.as_ptr(), input.len())};
+    unsafe {day10::day10cpp::run_p1(input.as_ptr(), input.len())};
 }
 
 
@@ -36,9 +45,3 @@ fn part2_rust_github() {
     )));
 }
 
-#[divan::bench]
-fn part2_cpp_yt() {
-    day10::github::p2(divan::black_box(include_str!(
-        "../input.txt",
-    )));
-}
