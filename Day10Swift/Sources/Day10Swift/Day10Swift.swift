@@ -45,10 +45,10 @@ enum Tile: UInt8 {  // values are ASCII values for the map symbols
 }
 
 struct Map {
-  let lines: Data
-  let startLocaton: Location
-  let width: Int
-  let height: Int
+  private let lines: Data
+  private let startLocation: Location
+  private let width: Int
+  private let height: Int
 
   private func get(_ location: Location) -> Tile? {
     guard location.x < width && location.y < height else {
@@ -147,9 +147,9 @@ struct Map {
   }
 
   func findLoop() -> [Location]? {
-    let possible_starts = connected(to: startLocaton)
+    let possible_starts = connected(to: startLocation)
     for (next, direction) in possible_starts {
-      var visited: [Location] = [startLocaton, next]
+      var visited: [Location] = [startLocation, next]
       var current = next
       var cameFrom = direction
       while let (next, direction) = nextLocation(from: current, cameFrom: cameFrom) {
@@ -163,22 +163,22 @@ struct Map {
     }
     return nil
   }
-}
 
-func parse(_ lines: Data) -> Map? {
-  guard let width = lines.firstIndex(of: UInt8(10)) else {
-    return nil
+  static func parse(_ lines: Data) -> Map? {
+    guard let width = lines.firstIndex(of: UInt8(10)) else {
+      return nil
+    }
+    let height = lines.count / (width + 1) + 1
+    guard let startpoint = lines.firstIndex(of: UInt8(83)) else {
+      return nil
+    }
+    let startLocation = Location(x: startpoint % (width + 1), y: startpoint / (width + 1))
+    return Map(lines: lines, startLocation: startLocation, width: width, height: height)
   }
-  let height = lines.count / (width + 1)
-  guard let startpoint = lines.firstIndex(of: UInt8(83)) else {
-    return nil
-  }
-  let startLocaton = Location(x: startpoint % (width + 1), y: startpoint / (width + 1))
-  return Map(lines: lines, startLocaton: startLocaton, width: width, height: height)
 }
 
 func p1(_ input: Data) -> Int {
-  guard let map = parse(input) else {
+  guard let map = Map.parse(input) else {
     print("Failed to parse input")
     return 0
   }
@@ -190,7 +190,7 @@ func p1_from_file(filename: String) -> Int {
     print("Failed to read file \(filename)")
     return 0
   }
-  guard let map = parse(lines) else {
+  guard let map = Map.parse(lines) else {
     print("Failed to parse file \(filename)")
     return 0
   }

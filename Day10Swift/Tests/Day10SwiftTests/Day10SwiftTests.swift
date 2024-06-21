@@ -4,17 +4,13 @@ import XCTest
 
 final class Day10SwiftTests: XCTestCase {
   func test_next_location_dash() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     var (next, direction) = map.nextLocation(from: Location(x: 2, y: 0), cameFrom: .west)!
     XCTAssertEqual(next, Location(x: 3, y: 0))
     XCTAssertEqual(direction, .west)
@@ -24,17 +20,13 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_next_location_J() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     var (next, direction) = map.nextLocation(from: Location(x: 3, y: 2), cameFrom: .north)!
     XCTAssertEqual(next, Location(x: 2, y: 2))
     XCTAssertEqual(direction, .east)
@@ -44,17 +36,13 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_next_location_L() {
-    let map = Map(
-      lines:
+     let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     var (next, direction) = map.nextLocation(from: Location(x: 1, y: 2), cameFrom: .north)!
     XCTAssertEqual(next, Location(x: 2, y: 2))
     XCTAssertEqual(direction, .west)
@@ -64,17 +52,13 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_next_location_pipe() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     var (next, direction) = map.nextLocation(from: Location(x: 1, y: 1), cameFrom: .north)!
     XCTAssertEqual(next, Location(x: 1, y: 2))
     XCTAssertEqual(direction, .north)
@@ -84,17 +68,13 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_next_location_seven() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     var (next, direction) = map.nextLocation(from: Location(x: 3, y: 0), cameFrom: .west)!
     XCTAssertEqual(next, Location(x: 3, y: 1))
     XCTAssertEqual(direction, .north)
@@ -104,37 +84,31 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_next_location_F() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
-        .F-7.
-        .|.|.
-        .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
-    var (next, direction) = map.nextLocation(from: Location(x: 1, y: 0), cameFrom: .south)!
-    XCTAssertEqual(next, Location(x: 2, y: 0))
+        ..F7.
+        .FJ|.
+        SJ.L7
+        |F--J
+        LJ...
+        """.data(using: .utf8)!
+    )!
+    var (next, direction) = map.nextLocation(from: Location(x: 2, y: 0), cameFrom: .south)!
+    XCTAssertEqual(next, Location(x: 3, y: 0))
     XCTAssertEqual(direction, .west)
-    (next, direction) = map.nextLocation(from: Location(x: 1, y: 0), cameFrom: .east)!
-    XCTAssertEqual(next, Location(x: 1, y: 1))
+    (next, direction) = map.nextLocation(from: Location(x: 2, y: 0), cameFrom: .east)!
+    XCTAssertEqual(next, Location(x: 2, y: 1))
     XCTAssertEqual(direction, .north)
   }
 
   func test_connected_to() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 1),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     let connected = map.connected(to: Location(x: 1, y: 0))
     XCTAssertEqual(connected.count, 2)
     XCTAssertTrue(connected.contains { $0.0 == Location(x: 1, y: 1) && $0.1 == .north })
@@ -142,17 +116,13 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_find_loop() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         .S-7.
         .|.|.
         .L-J.
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 1, y: 0),
-      width: 5,
-      height: 3
-    )
+        """.data(using: .utf8)!
+    )!
     let loop = map.findLoop()
     XCTAssertEqual(loop?.count, 8)
     XCTAssertEqual(
@@ -170,19 +140,15 @@ final class Day10SwiftTests: XCTestCase {
   }
 
   func test_find_loop2() {
-    let map = Map(
-      lines:
+    let map = Map.parse(
         """
         ..F7.
         .FJ|.
         SJ.L7
         |F--J
         LJ...
-        """.data(using: .utf8)!,
-      startLocaton: Location(x: 0, y: 2),
-      width: 5,
-      height: 5
-    )
+        """.data(using: .utf8)!
+    )!
     let loop = map.findLoop()
     XCTAssertEqual(loop?.count, 16)
   }
@@ -190,7 +156,7 @@ final class Day10SwiftTests: XCTestCase {
   func test_part1() {
     let lines = try! Data(contentsOf: URL(fileURLWithPath: "../input.txt"))
 
-    let map = parse(lines)
+    let map = Map.parse(lines)!
     let count = (map.findLoop()?.count ?? 0) / 2
     XCTAssertEqual(count, 6778)
   }
@@ -199,7 +165,7 @@ final class Day10SwiftTests: XCTestCase {
 final class PerfomanceTests: XCTestCase {
   func test_part1() {
     let lines = try! Data(contentsOf: URL(fileURLWithPath: "../input.txt"))
-    let map = parse(lines)
+    let map = Map.parse(lines)!
     measure(metrics: [XCTClockMetric()]) {
       let count = (map.findLoop()?.count ?? 0) / 2
       XCTAssertEqual(count, 6778)
