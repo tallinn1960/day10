@@ -19,15 +19,15 @@ The benchmark results for **criterion/part1_rust** and **criterion/part1_cpp** s
 
 I am pretty sure that more efficient C++ solutions than those given here are possible, but my bet is that those will look more like C than C++.
 
-
-
 (*) on a Mac mini M1 running MacOS Sonoma, it's better on Linux where the Rust code is only three times faster than the code delivered by gcc-12.
 
 ## Other lessons learned - Swift is embarrassingly slow
 
+I added a Swift solution for macOS (it won't be compiled and benchmarked on other platforms). Rust code is about **1000** times **(!)** faster than the Swift solution. The Swift solution uses the same algorithm with the same abstractions as the Rust solution.
+
 The Rust compiler on Windows 11 on ARM produces slower code for the Rust-Github-Solution and substantially slower code for my Rust solutions. On Linux gcc-12 produces faster code than gcc-11. But both C++ solutions are substantially worse than the Rust solutions on all platforms with all available compilers tried (macOS Sonoma, Ubunutu 24.04, Window 11 on ARM 23H2 - Linux and Windows running in a Parallels VM on a Mac mini M1).
 
-I added a Swift solution for macOS (it won't be compiled and benchmarked on other platforms). Rust code is about **1000** times **(!)** faster than the Swift solution. The Swift solution uses the same algorithm with the same abstractions as the Rust solution.
+
 
 ## macOS and gcc
 
