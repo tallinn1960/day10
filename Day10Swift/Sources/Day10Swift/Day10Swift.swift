@@ -3,8 +3,8 @@
 import Foundation
 
 struct Location: Equatable, Hashable {
-  private(set) var x: Int
-  private(set) var y: Int
+  let x: Int
+  let y: Int
   func south() -> Location? {
     return Location(x: x, y: y + 1)
   }
@@ -33,7 +33,7 @@ enum Direction: CaseIterable {
   case west
 }
 
-enum Tile: UInt8 { // values are ASCII values for the map symbols
+enum Tile: UInt8 {  // values are ASCII values for the map symbols
   case pipe = 124
   case dash = 45
   case L = 76
@@ -45,12 +45,12 @@ enum Tile: UInt8 { // values are ASCII values for the map symbols
 }
 
 struct Map {
-  private(set) var lines: Data
-  private(set) var startLocaton: Location
-  private(set) var width: Int
-  private(set) var height: Int
+  let lines: Data
+  let startLocaton: Location
+  let width: Int
+  let height: Int
 
-  func get(_ location: Location) -> Tile? {
+  private func get(_ location: Location) -> Tile? {
     guard location.x < width && location.y < height else {
       return nil
     }
@@ -165,27 +165,43 @@ struct Map {
   }
 }
 
-func parse(_ lines: Data) -> Map {
-  let width = lines.firstIndex(of: UInt8(10))!
+func parse(_ lines: Data) -> Map? {
+  guard let width = lines.firstIndex(of: UInt8(10)) else {
+    return nil
+  }
   let height = lines.count / (width + 1)
-  let startpoint = lines.firstIndex(of: UInt8(83))!
+  guard let startpoint = lines.firstIndex(of: UInt8(83)) else {
+    return nil
+  }
   let startLocaton = Location(x: startpoint % (width + 1), y: startpoint / (width + 1))
   return Map(lines: lines, startLocaton: startLocaton, width: width, height: height)
 }
 
 func p1(_ input: Data) -> Int {
-  let map = parse(input)
+  guard let map = parse(input) else {
+    print("Failed to parse input")
+    return 0
+  }
   return (map.findLoop()?.count ?? 0) / 2
 }
 
 func p1_from_file(filename: String) -> Int {
-  let lines = try! Data(contentsOf: URL(fileURLWithPath: filename))
-  let map = parse(lines)
+  guard let lines = try? Data(contentsOf: URL(fileURLWithPath: filename)) else {
+    print("Failed to read file \(filename)")
+    return 0
+  }
+  guard let map = parse(lines) else {
+    print("Failed to parse file \(filename)")
+    return 0
+  }
   return (map.findLoop()?.count ?? 0) / 2
 }
 
 // declare c abi to p1
 @_cdecl("p1")
 public func p1(_ a: UnsafeMutablePointer<UInt8>?, _ b: Int) -> Int {
-  return p1(Data(bytesNoCopy: a!, count: b, deallocator: .none))
+  guard let a = a else {
+    return 0
+  }
+  return p1(Data(bytesNoCopy: a, count: b, deallocator: .none))
 }
