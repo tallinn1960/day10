@@ -24,6 +24,18 @@ I am pretty sure that more efficient C++ solutions than those given here are pos
 
 The Rust compiler on Windows 11 on ARM produces slower code for the Rust-Github-Solution and substantially slower code for my Rust solutions. On Linux gcc-12 produces faster code than gcc-11. But both C++ solutions are substantially worse than the Rust solutions on all platforms with all available compilers tried (macOS Sonoma, Ubunutu 24.04, Window 11 on ARM 23H2 - Linux and Windows running in a Parallels VM on a Mac mini M1).
 
+## macOS and gcc
+
+If you want to try the most recent *gcc* version available by **HomeBrew** on macOS (gcc 14 at the time of writing), you can install it and run the benchmarks with the following commands:
+
+```bash
+brew install gcc
+cargo clean
+CC=gcc-14 CXX=g++-14 CXXSTDLIB=stdc++ RUSTFLAGS=-L/opt/homebrew/Cellar/gcc/14.1.0_1/lib/gcc/current/ cargo bench
+```
+
+It produces slightly faster C++ code on macOS than *clang* in most cases.
+
 ## Note for Windows users
 
 Make sure that cmake is in your %PATH%. There is a cmake coming with MS Visual Studio 2022 Community Edition. It's in `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin`.
