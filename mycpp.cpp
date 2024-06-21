@@ -1,4 +1,6 @@
 #include <cstddef>
+#include <cstdint> // Linux needs this
+#include <cstring> // Linux needs this
 #include <optional>
 #include <span>
 #include <vector>
