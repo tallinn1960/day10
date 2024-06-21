@@ -1,13 +1,8 @@
-#include <cctype>
 #include <cstddef>
-#include <cstdint>
-#include <fstream>
 #include <optional>
 #include <span>
-#include <string>
-#include <tuple>
 #include <vector>
-#include <cstring>
+#include <tuple>
 
 class Location {
     size_t m_x;
@@ -65,7 +60,7 @@ class Map {
     size_t m_height;
 
     // private constructor, Map will be parsed from input
-    Map(std::vector<std::span<const char>> lines, size_t width, Location start)
+    Map(const std::vector<std::span<const char>> lines, size_t width, Location start)
         : m_lines(lines), m_width(width), m_start(start),
           m_height(lines.size()) {}
 
@@ -73,31 +68,6 @@ class Map {
         : m_lines(other.m_lines), m_width(other.m_width),
           m_start(other.m_start), m_height(other.m_height) {}
 
-    Map(Map &&other)
-        : m_lines(std::move(other.m_lines)), m_width(other.m_width),
-          m_start(other.m_start), m_height(other.m_height) {}
-
-    Map &operator=(Map &&other) {
-        if (this == &other) {
-            return *this;
-        }
-        m_lines = std::move(other.m_lines);
-        m_width = other.m_width;
-        m_start = other.m_start;
-        m_height = other.m_height;
-        return *this;
-    }
-
-    Map &operator=(const Map &other) {
-        if (this == &other) {
-            return *this;
-        }
-        m_lines = other.m_lines;
-        m_width = other.m_width;
-        m_start = other.m_start;
-        m_height = other.m_height;
-        return *this;
-    }
     // symbols on the tiles connect them to each other
     // | connects up and down
     // - connects left and right
@@ -112,7 +82,7 @@ class Map {
     // and the direction we are coming from when entering that tile.
     // If there is no such tile, return std::nullopt.
     inline std::optional<std::tuple<Location, Direction>>
-    next_location(const Location &current, const Direction &coming_from) {
+    next_location(const Location &current, const Direction &coming_from) const {
         auto tile = get_tile(current);
         std::optional<std::tuple<std::optional<Location>, Direction>> next =
             std::nullopt;
@@ -204,11 +174,11 @@ class Map {
         return std::make_tuple(next_location.value(), direction);
     }
 
-    inline const char &get_tile(const Location &next_location) {
+    inline const char &get_tile(const Location &next_location) const {
         return m_lines[next_location.y][next_location.x];
     }
 
-    std::vector<std::tuple<Location, Direction>> connected_to() {
+    std::vector<std::tuple<Location, Direction>> connected_to() const {
         std::vector<std::tuple<Location, Direction>> connected;
         auto north = m_start.north();
         if (north.has_value()) {
@@ -235,6 +205,17 @@ class Map {
             }
         }
         return connected;
+    }
+
+    static void look_for_startposition(
+        std::span<const char> &line,
+        std::optional<Location> &start_location,
+        std::vector<std::span<const char>> &lines) {
+        char *start_position = (char *) memchr(line.data(), 'S', line.size());
+        if (start_position != nullptr) {
+            start_location = Location(start_position - line.data(),
+                                      lines.size());
+        }
     }
 
 public:
@@ -279,18 +260,7 @@ public:
                    start_location.value_or(Location(0, 0)));
     }
 
-    static void look_for_startposition(
-        std::span<const char> &line,
-        std::optional<Location> &start_location,
-        std::vector<std::span<const char>> &lines) {
-        char *start_position = (char *) memchr(line.data(), 'S', line.size());
-        if (start_position != nullptr) {
-            start_location = Location(start_position - line.data(),
-                                      lines.size());
-        }
-    }
-
-    std::optional<std::vector<Location>> find_loop() {
+    std::optional<std::vector<Location>> find_loop() const {
         std::vector<Location> loop;
         auto connected = connected_to();
         for (auto [location, direction] : connected) {
