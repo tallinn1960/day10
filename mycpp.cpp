@@ -1,4 +1,6 @@
 #include <cstddef>
+#include <cstdint> // Linux needs this
+#include <cstring> // Linux needs this
 #include <optional>
 #include <span>
 #include <vector>
@@ -150,22 +152,22 @@ class Map {
         // coming from, return None, if it is (S connects to everything)
         switch (direction) {
         case NORTH:
-            if (memchr("S|LJ", get_tile(next_location.value()), 4) == nullptr) {
+            if (std::strchr("S|LJ", get_tile(next_location.value())) == nullptr) {
                 return std::nullopt;
             }
             break;
         case SOUTH:
-            if (memchr("S|7F", get_tile(next_location.value()), 4) == nullptr) {
+            if (std::strchr("S|7F", get_tile(next_location.value())) == nullptr) {
                 return std::nullopt;
             }
             break;
         case WEST:
-            if (memchr("S-7J", get_tile(next_location.value()), 4) == nullptr) {
+            if (std::strchr("S-7J", get_tile(next_location.value())) == nullptr) {
                 return std::nullopt;
             }
             break;
         case EAST:
-            if (memchr("S-LF", get_tile(next_location.value()), 4) == nullptr) {
+            if (std::strchr("S-LF", get_tile(next_location.value())) == nullptr) {
                 return std::nullopt;
             }
             break;
@@ -182,25 +184,25 @@ class Map {
         std::vector<std::tuple<Location, Direction>> connected;
         auto north = m_start.north();
         if (north.has_value()) {
-            if (memchr("|F7", get_tile(north.value()), 4) != nullptr) {
+            if (std::strchr("|F7", get_tile(north.value())) != nullptr) {
                 connected.push_back(std::make_tuple(north.value(), SOUTH));
             }
         }
         auto south = m_start.south();
         if (south.has_value()) {
-            if (memchr("|LJ", get_tile(south.value()), 4) != nullptr) {
+            if (std::strchr("|LJ", get_tile(south.value())) != nullptr) {
                 connected.push_back(std::make_tuple(south.value(), NORTH));
             }
         }
         auto west = m_start.west();
         if (west.has_value()) {
-            if (memchr("-LF", get_tile(west.value()), 4) != nullptr) {
+            if (std::strchr("-LF", get_tile(west.value())) != nullptr) {
                 connected.push_back(std::make_tuple(west.value(), EAST));
             }
         }
         auto east = m_start.east();
         if (east.has_value()) {
-            if (memchr("-7J", get_tile(east.value()), 4) != nullptr) {
+            if (std::strchr("-7J", get_tile(east.value())) != nullptr) {
                 connected.push_back(std::make_tuple(east.value(), WEST));
             }
         }
@@ -211,7 +213,7 @@ class Map {
         std::span<const char> &line,
         std::optional<Location> &start_location,
         std::vector<std::span<const char>> &lines) {
-        char *start_position = (char *) memchr(line.data(), 'S', line.size());
+        char *start_position = (char *) std::memchr(line.data(), 'S', line.size());
         if (start_position != nullptr) {
             start_location = Location(start_position - line.data(),
                                       lines.size());
