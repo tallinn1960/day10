@@ -2,7 +2,7 @@
 // https://docs.swift.org/swift-book
 import Foundation
 
-struct Location: Equatable, Hashable {
+struct Location: Equatable {
   let x: Int
   let y: Int
   func south() -> Location? {
@@ -19,10 +19,6 @@ struct Location: Equatable, Hashable {
   }
   static func == (lhs: Location, rhs: Location) -> Bool {
     return lhs.x == rhs.x && lhs.y == rhs.y
-  }
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(x)
-    hasher.combine(y)
   }
 }
 
