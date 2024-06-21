@@ -15,9 +15,10 @@ fn part1_rust() {
 
 #[divan::bench]
 fn part1_cpp() {
-    day10::ffi::p1_cpp(divan::black_box(include_str!(
+    let input = divan::black_box(include_str!(
         "../input.txt",
-    )));
+    ));
+    unsafe {day10::ffi::run_p1(input.as_ptr(), input.len())};
 }
 
 

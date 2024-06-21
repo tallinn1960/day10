@@ -1,5 +1,4 @@
 use memchr::memchr;
-extern crate link_cplusplus;
 
 pub mod github;
 pub mod ffi;

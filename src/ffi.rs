@@ -1,3 +1,4 @@
+extern crate link_cplusplus;
 
 #[link(name = "day10cpp", kind = "static")]
 extern "C" {
@@ -8,6 +9,7 @@ extern "C" {
     pub fn run_p1(bytes: *const u8, size: usize) -> u64;
 }
 
+#[cfg(test)]
 pub fn p1_cpp(input: &str) -> u64 {
     unsafe {run_p1(input.as_ptr(), input.len())}
 }
