@@ -194,11 +194,13 @@ final class Day10SwiftTests: XCTestCase {
     let count = (map.findLoop()?.count ?? 0) / 2
     XCTAssertEqual(count, 6778)
   }
+}
 
-  func test_part1_with_measure() {
+final class PerfomanceTests: XCTestCase {
+  func test_part1() {
     let lines = try! Data(contentsOf: URL(fileURLWithPath: "../input.txt"))
+    let map = parse(lines)
     measure(metrics: [XCTClockMetric()]) {
-      let map = parse(lines)
       let count = (map.findLoop()?.count ?? 0) / 2
       XCTAssertEqual(count, 6778)
     }
