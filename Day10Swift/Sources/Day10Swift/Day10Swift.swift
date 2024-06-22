@@ -54,31 +54,15 @@ struct Map {
             return nil
         }
         let result: (Location, Direction)? =
-            switch tile {
-            case .pipe where cameFrom == .north:
+            switch (tile, cameFrom) {
+            case (.pipe, .north), (.seven, .west), (.F, .east):
                 from.south().map { ($0, .north) }
-            case .pipe where cameFrom == .south:
+            case (.pipe, .south), (.L, .east), (.J, .west):
                 from.north().map { ($0, .south) }
-            case .dash where cameFrom == .east:
+            case (.dash, .east), (.J, .north), (.seven, .south):
                 from.west().map { ($0, .east) }
-            case .dash where cameFrom == .west:
+            case (.dash, .west), (.L, .north), (.F, .south):
                 from.east().map { ($0, .west) }
-            case .L where cameFrom == .north:
-                from.east().map { ($0, .west) }
-            case .L where cameFrom == .east:
-                from.north().map { ($0, .south) }
-            case .J where cameFrom == .north:
-                from.west().map { ($0, .east) }
-            case .J where cameFrom == .west:
-                from.north().map { ($0, .south) }
-            case .seven where cameFrom == .south:
-                from.west().map { ($0, .east) }
-            case .seven where cameFrom == .west:
-                from.south().map { ($0, .north) }
-            case .F where cameFrom == .south:
-                from.east().map { ($0, .west) }
-            case .F where cameFrom == .east:
-                from.south().map { ($0, .north) }
             default:
                 nil
             }
