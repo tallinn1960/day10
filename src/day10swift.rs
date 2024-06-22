@@ -1,9 +1,14 @@
 extern "C" {
     fn run_p1_swift (b: * const u8, len: usize) -> u64;
+    fn run_p2_swift (b: * const u8, len: usize) -> u64;
 }
 
 pub fn p1_swift(input: &str) -> u64 {
     unsafe { run_p1_swift(input.as_ptr(), input.len())}
+}
+
+pub fn p2_swift(input: &str) -> u64 {
+    unsafe { run_p2_swift(input.as_ptr(), input.len())}
 }
 
 #[cfg(test)]
@@ -36,5 +41,14 @@ L7JLJL-JLJLJL--JLJ.L
         f.read_to_string(&mut buf).expect("can't read file");
         let result = p1_swift(&buf);
         assert_eq!(result, 6778);
+    }
+
+    #[test]
+    fn test_swift_part2() {
+        let mut f = File::open("input.txt").expect("can't open file");
+        let mut buf = String::new();
+        f.read_to_string(&mut buf).expect("can't read file");
+        let result = p2_swift(&buf);
+        assert_eq!(result, 433);
     }
 }

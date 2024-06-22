@@ -104,8 +104,8 @@ struct Map {
     /// Find a loop starting at and returning to the start location. Return the list of locations
     /// in the loop, or nil if no loop is found.
     func findLoop() -> [Location]? {
-        let possible_starts = connected(to: startLocation)
-        for (next, direction) in possible_starts {
+        let possibleStarts = connected(to: startLocation)
+        for (next, direction) in possibleStarts {
             var visited: [Location] = [startLocation, next]
             var current = next
             var cameFrom = direction
@@ -138,6 +138,23 @@ struct Map {
     }
 }
 
+/// Given a closed path of points with integer coordinates, compute the number of points interior to the path.
+/// THe last point on the path must be the same as the first point of the path.
+func shoelace_with_picks_theorem(_ points: [Location]) -> Int {
+    let n = points.count
+    let area =
+        abs(
+            (0..<n - 1).reduce(0) {
+                let i = $1
+                let j = (i + 1)
+                return $0 + (points[i].y + points[j].y) * (points[i].x - points[j].x)
+            }) / 2
+
+    // Pick's theorem: A = i + b/2 - 1, where i is the number of interior points,
+    // A the area within the polygon and b is the number of boundary points.
+    return area - (n - 1) / 2 + 1
+}
+
 /// AoC 2023 part 1: compute the distance to the tile in the loop farthest from the start location.
 func p1(_ input: Data) -> Int {
     guard let map = Map.parse(input) else {
@@ -145,6 +162,26 @@ func p1(_ input: Data) -> Int {
         return 0
     }
     return (map.findLoop()?.count ?? 0) / 2
+}
+
+func p2(_ input: Data) -> Int {
+    guard let map = Map.parse(input) else {
+        print("Failed to parse input")
+        return 0
+    }
+    guard let loop = map.findLoop() else {
+        print("No loop found")
+        return 0
+    }
+    return shoelace_with_picks_theorem(loop)
+}
+
+func p2_from_file(filename: String) -> Int {
+    guard let lines = try? Data(contentsOf: URL(fileURLWithPath: filename)) else {
+        print("Failed to read file \(filename)")
+        return 0
+    }
+    return p2(lines)
 }
 
 func p1_from_file(filename: String) -> Int {
@@ -162,4 +199,13 @@ public func p1Swift(_ a: UnsafeMutablePointer<UInt8>?, _ b: UInt64) -> Int {
         return 0
     }
     return p1(Data(bytesNoCopy: a, count: Int(b), deallocator: .none))
+}
+
+// declare c abi to p1
+@_cdecl("run_p2_swift")
+public func p2Swift(_ a: UnsafeMutablePointer<UInt8>?, _ b: UInt64) -> Int {
+    guard let a = a else {
+        return 0
+    }
+    return p2(Data(bytesNoCopy: a, count: Int(b), deallocator: .none))
 }

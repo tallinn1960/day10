@@ -159,6 +159,11 @@ final class Day10SwiftTests: XCTestCase {
         XCTAssertEqual(count, 6778)
     }
 
+    func test_part2() {
+        let count = p2_from_file(filename: "../input.txt")
+        XCTAssertEqual(count, 433)
+    }
+
     func test_wrong_file() {
         let count = p1_from_file(filename: "nonexistent")
         XCTAssertEqual(count, 0)
