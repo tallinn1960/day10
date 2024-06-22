@@ -155,11 +155,51 @@ final class Day10SwiftTests: XCTestCase {
     }
 
     func test_part1() {
-        let lines = try! Data(contentsOf: URL(fileURLWithPath: "../input.txt"))
-
-        let map = Map.parse(lines)!
-        let count = (map.findLoop()?.count ?? 0) / 2
+        let count = p1_from_file(filename: "../input.txt")
         XCTAssertEqual(count, 6778)
+    }
+
+    func test_wrong_file() {
+        let count = p1_from_file(filename: "nonexistent")
+        XCTAssertEqual(count, 0)
+    }
+
+    func test_wrong_data() {
+        let count = p1(Data())
+        XCTAssertEqual(count, 0)
+    }
+
+    func test_no_loop() {
+        let count = p1(
+            """
+            .S-7.
+            ...|.
+            .L-J.
+            """.data(using: .utf8)!
+        )
+        XCTAssertEqual(count, 0)
+    }
+
+    func test_no_start() {
+        let count = p1(
+            """
+            .F-7.
+            .|.|.
+            .L-J.
+            """.data(using: .utf8)!
+        )
+        XCTAssertEqual(count, 0)
+    }
+
+    func test_path_leads_nowhere() {
+        let count = p1(
+            """
+            .S-7.
+            .|.|.
+            .|-L.
+            """.data(using: .utf8)!
+        )
+        XCTAssertEqual(count, 0)
     }
 }
 

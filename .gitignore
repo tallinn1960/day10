@@ -5,3 +5,4 @@ flamegraph.svg
 build/
 *.dSYM/
 Day10Swift/.swiftpm/xcode/xcshareddata/xcschemes/Day10Swift.xcscheme
+Day10Swift/default.profraw
