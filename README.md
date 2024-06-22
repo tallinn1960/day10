@@ -6,15 +6,14 @@ This repository contains solutions to the AoC 2023 day 10 problem in Rust and C+
 
 The solutions are
 
-| Bench mark name | Source | Benchmark (Criterion/Mac mini M1)|
+| Bench mark name | Source | Benchmark (Criterion/Mac mini M1/macOS)|
 ------------------|---------|-|
 | **criterion/part1_rust** | Own solution for part 1 in Rust |~60 µs|
-| **criterion/part1_cpp** | Own solution for part 1 in C++ | ~224 µs|
-| criterion/part1_swift | Own solution in Swift (*only on macOS*) | ~323 µs|
-| criterion/part2 | Own solution for part 2 in Rust |~74 µs|
-| criterion/part2_github | Rust Solution taken from Github |~89 µs|
+| **criterion/part1_cpp** | Own solution for part 1 in C++ | ~220 µs|
+| criterion/part1_swift | Own solution in Swift (*only on macOS*) | ~350 µs|
+| criterion/part2 | Own solution for part 2 in Rust |~80 µs|
 
-Rust compiler version 1.79.0, clang 15/Swift 5.10 (macOS), gcc-12 (Linux), msvc Community 2022 (Windows 11 on ARM)
+Rust compiler version 1.79.0 (all platforms), clang 15/Swift 5.10 (macOS), gcc-12 (Linux), msvc Community 2022 (Windows 11 on ARM)
 
 Readers may notice that the solutions for part one do more than what is required to solve part one of the AoC problem. For Rust, it turned out that computing the loop and return its locations as a vector is faster than just counting steps. So I designed all other implementations the same way. Having a vector of all locations of the loop helps to solve part 2 in a very efficient way.
 
@@ -26,10 +25,11 @@ I am pretty sure that more efficient C++ solutions than those given here are pos
 
 ## Other lessons learned - Swift keeps up almost
 
-I added a Swift solution for macOS (see below why you don't see its criterion or divan benchmark when running the rep on other platforms). Originally I wrote here that Swift is embarrassingly slow. But then I found the culprit of the originally bad Swift performance,
-a way to slow check if we reached the start location of the loop again (one bad line of code may make a **huge** difference). Now I am embarrassed that I didn't see that earlier. The Swift solution is now only 5 times slower than the Rust solution, which is a good result for Swift. It was 1000 times slower before.
+I added a Swift solution for macOS (see below why you don't see its criterion or divan benchmark when running the rep on other platforms). Originally I wrote here that Swift is embarrassingly slow. But then I found the culprit of the originally bad Swift performance, a way to slow check whether we reached the start location of the loop again (one bad line of code may make a **huge** difference). Now I am embarrassed that I didn't see that earlier. The Swift solution is now only 5 times slower than the Rust solution, which is a good result for Swift. It was 1000 times slower before.
 
 The Rust compiler on Windows 11 on ARM produces slower code for the Rust-Github-Solution and substantially slower code for my Rust solutions. On Linux gcc-12 produces faster code than gcc-11. But both C++ solutions are substantially worse than the Rust solutions on all platforms with all available compilers tried (macOS Sonoma, Ubunutu 24.04, Window 11 on ARM 23H2 - Linux and Windows running in a Parallels VM on a Mac mini M1).
+
+Rosetta 2 on macOS Sonoma is really struggling here (run with `cargo bench --target x86_64-apple-darwin`). I have other algorithms in Rust and C++ where the x86_64 code executed by Rosetta 2 is as fast as the arm64 code, but for this problem, Rosetta 2 runs the x86_64 code about 2 times slower than the arm64 code.
 
 ## macOS and gcc
 
@@ -41,6 +41,7 @@ cargo clean
 CC=gcc-14 CXX=g++-14 CXXSTDLIB=stdc++ RUSTFLAGS=-L/opt/homebrew/opt/gcc/lib/gcc/current/ cargo bench
 ```
 
+It will give somewhat faster C++ code. But the Rust code will still be faster.  
 ## Note for Windows users
 
 Make sure that cmake is in your %PATH%. There is a cmake coming with MS Visual Studio 2022 Community Edition. It's in `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin`.

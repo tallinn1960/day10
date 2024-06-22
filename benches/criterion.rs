@@ -32,7 +32,7 @@ fn bench_p1_cpp(c: &mut Criterion) {
                 f.read_to_string(&mut buf).expect("can't read file");
                 buf
             },
-            |f| unsafe {day10::day10cpp::run_p1(f.as_ptr(), f.len())},
+            |f| day10::day10cpp::p1_cpp(&f),
             BatchSize::SmallInput,
         )
     });
@@ -50,7 +50,7 @@ fn bench_p1_swift(c: &mut Criterion) {
                 f.read_to_string(&mut buf).expect("can't read file");
                 buf
             },
-            |f| unsafe {day10::day10swift::p1_swift(f.as_ptr(), f.len())},
+            |f| unsafe { day10::day10swift::p1_swift(f.as_ptr(), f.len()) },
             BatchSize::SmallInput,
         )
     });
@@ -74,32 +74,10 @@ fn bench_p2(c: &mut Criterion) {
     g.finish()
 }
 
-
-fn bench_p2_github(c: &mut Criterion) {
-    let mut g = c.benchmark_group("criterion");
-    g.bench_function("part2_rust_github", |b| {
-        b.iter_batched(
-            || {
-                let mut f = File::open("input.txt").expect("can't open file");
-                let mut buf = String::new();
-                f.read_to_string(&mut buf).expect("can't read file");
-                buf
-            },
-            |f| day10::github::p2(&f),
-            BatchSize::SmallInput,
-        )
-    });
-    g.finish()
-}
-
-
 #[cfg(target_os = "macos")]
-criterion_group!(benches, bench_p1, 
-    bench_p1_swift, 
-    bench_p1_cpp, bench_p2, bench_p2_github);
+criterion_group!(benches, bench_p1, bench_p1_swift, bench_p1_cpp, bench_p2);
 
 #[cfg(not(target_os = "macos"))]
-criterion_group!(benches, bench_p1, 
-    bench_p1_cpp, bench_p2, bench_p2_github);
+criterion_group!(benches, bench_p1, bench_p1_cpp, bench_p2);
 
 criterion_main!(benches);
