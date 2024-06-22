@@ -156,7 +156,7 @@ func p1_from_file(filename: String) -> Int {
 }
 
 // declare c abi to p1
-@_cdecl("p1_swift")
+@_cdecl("run_p1_swift")
 public func p1Swift(_ a: UnsafeMutablePointer<UInt8>?, _ b: UInt64) -> Int {
     guard let a = a else {
         return 0

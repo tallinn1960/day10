@@ -14,7 +14,7 @@ fn part1_rust() {
 #[divan::bench]
 fn part1_swift() {
     let input = divan::black_box(include_str!("../input.txt",));
-    unsafe { day10::day10swift::p1_swift(input.as_ptr(), input.len()) };
+     day10::day10swift::p1_swift(input);
 }
 
 #[divan::bench]

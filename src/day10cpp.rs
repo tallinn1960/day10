@@ -1,21 +1,19 @@
-
 extern crate link_cplusplus;
 
 #[link(name = "day10cpp", kind = "static")]
 extern "C" {
-    fn run_p1(bytes: *const u8, size: usize) -> u64;
+    fn run_p1_cpp(bytes: *const u8, size: usize) -> u64;
 }
 
-
 pub fn p1_cpp(input: &str) -> u64 {
-    unsafe {run_p1(input.as_ptr(), input.len())}
+    unsafe { run_p1_cpp(input.as_ptr(), input.len()) }
 }
 
 #[cfg(test)]
 mod tests {
     use std::{fs::File, io::Read};
 
-    use crate::day10cpp::run_p1;
+    use crate::day10cpp::run_p1_cpp;
 
     #[test]
     fn test_cpp_sample() {
@@ -30,7 +28,7 @@ L---JF-JLJIIIIFJLJJ7
 L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L
 ";
-        let result = unsafe {run_p1(input.as_ptr(), input.len())};
+        let result = unsafe { run_p1_cpp(input.as_ptr(), input.len()) };
         assert_eq!(result, 80);
     }
 
@@ -39,8 +37,7 @@ L7JLJL-JLJLJL--JLJ.L
         let mut f = File::open("input.txt").expect("can't open file");
         let mut buf = String::new();
         f.read_to_string(&mut buf).expect("can't read file");
-        let result = unsafe {run_p1(buf.as_ptr(), buf.len())};
+        let result = unsafe { run_p1_cpp(buf.as_ptr(), buf.len()) };
         assert_eq!(result, 6778);
     }
-
 }

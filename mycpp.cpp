@@ -293,7 +293,7 @@ size_t p1(const std::span<const char> &input) {
 }
 
 extern "C" {
-    size_t run_p1(const char *input, size_t input_len) {
+    size_t run_p1_cpp(const char *input, size_t input_len) {
         auto span = std::span(input, input_len);
         return p1(span);
     }

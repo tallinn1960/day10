@@ -10,8 +10,7 @@ fn main() {
     println!("{result}");
     #[cfg(target_os = "macos")]
     {
-        let result =
-            unsafe { day10::day10swift::p1_swift(buf.as_ptr(), buf.len()) };
+        let result = day10::day10swift::p1_swift(&buf);
         println!("{result}");
     }
     let result = day10::day10cpp::p1_cpp(&buf);
