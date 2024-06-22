@@ -67,7 +67,7 @@ struct Map {
                 nil
             }
 
-        // Check that we did not enter an unreachable tile. 
+        // Check that we did not enter an unreachable tile.
         // The starting point is always reachable.
         return result.flatMap { (next, direction) in
             return switch direction {
