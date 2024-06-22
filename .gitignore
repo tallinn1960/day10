@@ -4,3 +4,4 @@ flamegraph.svg
 .cache/
 build/
 *.dSYM/
+Day10Swift/.swiftpm/xcode/xcshareddata/xcschemes/Day10Swift.xcscheme

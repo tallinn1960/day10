@@ -19,7 +19,7 @@ fn swift() {
     let input = divan::black_box(include_str!(
         "../input.txt",
     ));
-    unsafe {day10::day10swift::p1(input.as_ptr(), input.len())};
+    unsafe {day10::day10swift::p1_swift(input.as_ptr(), input.len())};
 }
 
 #[divan::bench]

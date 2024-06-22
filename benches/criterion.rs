@@ -50,7 +50,7 @@ fn bench_p1_swift(c: &mut Criterion) {
                 f.read_to_string(&mut buf).expect("can't read file");
                 buf
             },
-            |f| unsafe {day10::day10swift::p1(f.as_ptr(), f.len())},
+            |f| unsafe {day10::day10swift::p1_swift(f.as_ptr(), f.len())},
             BatchSize::SmallInput,
         )
     });

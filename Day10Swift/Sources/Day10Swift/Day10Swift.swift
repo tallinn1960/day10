@@ -17,9 +17,6 @@ struct Location: Equatable {
     func west() -> Location? {
         return x > 0 ? Location(x: x - 1, y: y) : nil
     }
-    static func == (lhs: Location, rhs: Location) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y
-    }
 }
 
 enum Direction {
@@ -131,10 +128,10 @@ struct Map {
             var current = next
             var cameFrom = direction
             while let (next, direction) = nextLocation(from: current, cameFrom: cameFrom) {
-                if visited.contains(next) {
+                visited.append(next)
+                if next == startLocation {
                     return visited
                 }
-                visited.append(next)
                 current = next
                 cameFrom = direction
             }
@@ -151,7 +148,7 @@ struct Map {
             return nil
         }
         let height = lines.count / (width + 1) + 1
-        guard let startpoint = lines.firstIndex(of: UInt8(83)) else {
+        guard let startpoint = lines.firstIndex(of: Tile.S.rawValue) else {
             return nil
         }
         let startLocation = Location(x: startpoint % (width + 1), y: startpoint / (width + 1))
@@ -177,8 +174,8 @@ func p1_from_file(filename: String) -> Int {
 }
 
 // declare c abi to p1
-@_cdecl("p1")
-public func p1(_ a: UnsafeMutablePointer<UInt8>?, _ b: UInt64) -> Int {
+@_cdecl("p1_swift")
+public func p1Swift(_ a: UnsafeMutablePointer<UInt8>?, _ b: UInt64) -> Int {
     guard let a = a else {
         return 0
     }

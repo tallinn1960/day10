@@ -124,7 +124,7 @@ final class Day10SwiftTests: XCTestCase {
             """.data(using: .utf8)!
         )!
         let loop = map.findLoop()
-        XCTAssertEqual(loop?.count, 8)
+        XCTAssertEqual(loop?.count, 9)
         XCTAssertEqual(
             loop,
             [
@@ -136,6 +136,7 @@ final class Day10SwiftTests: XCTestCase {
                 Location(x: 3, y: 1),
                 Location(x: 3, y: 0),
                 Location(x: 2, y: 0),
+                Location(x: 1, y: 0),
             ])
     }
 
@@ -150,7 +151,7 @@ final class Day10SwiftTests: XCTestCase {
             """.data(using: .utf8)!
         )!
         let loop = map.findLoop()
-        XCTAssertEqual(loop?.count, 16)
+        XCTAssertEqual(loop?.count, 17)
     }
 
     func test_part1() {
