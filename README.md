@@ -21,8 +21,6 @@ The benchmark results for **criterion/part1_rust** and **criterion/part1_cpp** s
 
 I am pretty sure that more efficient C++ solutions than those given here are possible, but my bet is that those will look more like C than C++.
 
-(*) on a Mac mini M1 running MacOS Sonoma
-
 ## Other lessons learned - Swift keeps up almost
 
 I added a Swift solution for macOS (see below why you don't see its criterion or divan benchmark when running the rep on other platforms). Originally I wrote here that Swift is embarrassingly slow. But then I found the culprit of the originally bad Swift performance, a way to slow check whether we reached the start location of the loop again (one bad line of code may make a **huge** difference). Now I am embarrassed that I didn't see that earlier. The Swift solution is now only 5 times slower than the Rust solution, which is a good result for Swift. It was 1000 times slower before.
