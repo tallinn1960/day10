@@ -136,7 +136,7 @@ final class Day10SwiftTests: XCTestCase {
                 Location(x: 3, y: 1),
                 Location(x: 3, y: 0),
                 Location(x: 2, y: 0),
-                Location(x: 1, y: 0),
+                Location(x: 1, y: 0)
             ])
     }
 
