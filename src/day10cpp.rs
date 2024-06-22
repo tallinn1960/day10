@@ -13,7 +13,7 @@ pub fn p1_cpp(input: &str) -> u64 {
 mod tests {
     use std::{fs::File, io::Read};
 
-    use crate::day10cpp::run_p1_cpp;
+    use crate::day10cpp::p1_cpp;
 
     #[test]
     fn test_cpp_sample() {
@@ -28,7 +28,7 @@ L---JF-JLJIIIIFJLJJ7
 L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L
 ";
-        let result = unsafe { run_p1_cpp(input.as_ptr(), input.len()) };
+        let result = p1_cpp(input);
         assert_eq!(result, 80);
     }
 
@@ -37,7 +37,7 @@ L7JLJL-JLJLJL--JLJ.L
         let mut f = File::open("input.txt").expect("can't open file");
         let mut buf = String::new();
         f.read_to_string(&mut buf).expect("can't read file");
-        let result = unsafe { run_p1_cpp(buf.as_ptr(), buf.len()) };
+        let result = p1_cpp(&buf);
         assert_eq!(result, 6778);
     }
 }
