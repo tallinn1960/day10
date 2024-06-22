@@ -196,7 +196,7 @@ impl Map<'_> {
     /// Given a location, return the char in the map.
     /// Note that this function does no bound checking.
     fn get(&self, loc: Location) -> u8 {
-        unsafe { *(*self.map.get_unchecked(loc.y)).get_unchecked(loc.x) }
+        self.map[loc.y][loc.x]
     }
 
     /// Given the location, return a list of all positions that are connected to this location.

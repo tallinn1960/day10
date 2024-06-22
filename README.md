@@ -9,7 +9,7 @@ The solutions are
 
 | Bench mark name | Source | Benchmark (Criterion/Mac mini M1)|
 ------------------|---------|-|
-| **criterion/part1_rust** | Own solution for part 1 in Rust |55 µs|
+| **criterion/part1_rust** | Own solution for part 1 in Rust |60 µs|
 | **criterion/part1_cpp** | Own solution for part 1 in C++ | 224 µs|
 | criterion/part1_swift | Own solution in Swift (only on macOS) | 44 ms|
 | criterion/part2 | Own solution for part 2 in Rust |74 µs|
