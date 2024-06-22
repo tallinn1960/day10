@@ -19,6 +19,6 @@ let package = Package(
       name: "Day10Swift"),
     .testTarget(
       name: "Day10SwiftTests",
-      dependencies: ["Day10Swift"]),
+      dependencies: ["Day10Swift"])
   ]
 )
