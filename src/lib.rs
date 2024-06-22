@@ -1,9 +1,9 @@
 use memchr::memchr;
 
-pub mod github;
 pub mod day10cpp;
 #[cfg(target_os = "macos")]
 pub mod day10swift;
+pub mod github;
 
 pub fn p1(input: &str) -> usize {
     let map = parse(input);
@@ -136,48 +136,31 @@ impl Map<'_> {
         coming_from: Direction,
     ) -> Option<(Location, Direction)> {
         match (self.get(*loc), coming_from) {
-            // These brackets/no brackets shenanigans are caused by rust-fmt.
-            // Note that collapsing branches hurts performance.
-            (b'|', Direction::South) => {
+            (b'|', Direction::South)
+            | (b'L', Direction::East)
+            | (b'J', Direction::West) => {
                 loc.north().map(|north| (north, Direction::South))
             }
-            (b'|', Direction::North) => loc
+            (b'|', Direction::North)
+            | (b'7', Direction::West)
+            | (b'F', Direction::East) => loc
                 .south(self.lower_right.y)
                 .map(|south| (south, Direction::North)),
-            (b'-', Direction::West) => loc
+            (b'-', Direction::West)
+            | (b'L', Direction::North)
+            | (b'F', Direction::South) => loc
                 .east(self.lower_right.x)
                 .map(|east| (east, Direction::West)),
-            (b'-', Direction::East) => {
+            (b'-', Direction::East)
+            | (b'J', Direction::North)
+            | (b'7', Direction::South) => {
                 loc.west().map(|west| (west, Direction::East))
             }
-            (b'L', Direction::North) => loc
-                .east(self.lower_right.x)
-                .map(|east| (east, Direction::West)),
-            (b'L', Direction::East) => {
-                loc.north().map(|north| (north, Direction::South))
-            }
-            (b'J', Direction::North) => {
-                loc.west().map(|west| (west, Direction::East))
-            }
-            (b'J', Direction::West) => {
-                loc.north().map(|north| (north, Direction::South))
-            }
-            (b'7', Direction::South) => {
-                loc.west().map(|west| (west, Direction::East))
-            }
-            (b'7', Direction::West) => loc
-                .south(self.lower_right.y)
-                .map(|south| (south, Direction::North)),
-            (b'F', Direction::East) => loc
-                .south(self.lower_right.y)
-                .map(|south| (south, Direction::North)),
-            (b'F', Direction::South) => loc
-                .east(self.lower_right.x)
-                .map(|east| (east, Direction::West)),
             // this should not happen
             _ => unreachable!("you cannot be here!"),
         }
-        .filter(|v| match v.1 { // check if we ran against a wall
+        .filter(|v| match v.1 {
+            // check if we ran against a wall
             Direction::North => {
                 memchr(self.get(v.0), &[b'S', b'|', b'L', b'J']).is_some()
             }

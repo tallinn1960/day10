@@ -5,14 +5,14 @@ import Foundation
 struct Location: Equatable {
     let x: Int
     let y: Int
-    func south() -> Location? {
-        return Location(x: x, y: y + 1)
+    func south(_ endOfWorld: Int) -> Location? {
+        return y < endOfWorld ? Location(x: x, y: y + 1) : nil
     }
     func north() -> Location? {
         return y > 0 ? Location(x: x, y: y - 1) : nil
     }
-    func east() -> Location? {
-        return Location(x: x + 1, y: y)
+    func east(_ endOfWorld: Int) -> Location? {
+        return x < endOfWorld ? Location(x: x + 1, y: y) : nil
     }
     func west() -> Location? {
         return x > 0 ? Location(x: x - 1, y: y) : nil
@@ -48,7 +48,7 @@ struct Map {
     }
 
     /// Given a location and the direction we came from to get there, return the next location
-    /// the pipe on that tile leads us to.
+    /// the pipe on that tile leads us to, if there is any.
     func nextLocation(from: Location, cameFrom: Direction) -> (Location, Direction)? {
         guard let tile = get(from) else {
             return nil
@@ -56,24 +56,20 @@ struct Map {
         let result: (Location, Direction)? =
             switch (tile, cameFrom) {
             case (.pipe, .north), (.seven, .west), (.F, .east):
-                from.south().map { ($0, .north) }
+                from.south(height).map { ($0, .north) }
             case (.pipe, .south), (.L, .east), (.J, .west):
                 from.north().map { ($0, .south) }
             case (.dash, .east), (.J, .north), (.seven, .south):
                 from.west().map { ($0, .east) }
             case (.dash, .west), (.L, .north), (.F, .south):
-                from.east().map { ($0, .west) }
+                from.east(width).map { ($0, .west) }
             default:
                 nil
             }
 
-        // Check that the next location is within the map bounds and that we
-        // did not enter an unreachable tile. The starting point is always reachable.
+        // Check that we did not enter an unreachable tile. 
+        // The starting point is always reachable.
         return result.flatMap { (next, direction) in
-            guard next.x < width && next.y < height else {
-                return nil
-            }
-
             return switch direction {
             case .north where [.S, .pipe, .L, .J].contains(get(next)),
                 .east where [.S, .dash, .L, .F].contains(get(next)),
@@ -93,13 +89,13 @@ struct Map {
         if let next = location.north(), [.S, .pipe, .F, .seven].contains(get(next)) {
             result.append((next, .south))
         }
-        if let next = location.south(), [.S, .pipe, .L, .J].contains(get(next)) {
+        if let next = location.south(height), [.S, .pipe, .L, .J].contains(get(next)) {
             result.append((next, .north))
         }
         if let next = location.west(), [.S, .dash, .L, .F].contains(get(next)) {
             result.append((next, .east))
         }
-        if let next = location.east(), [.S, .dash, .J, .seven].contains(get(next)) {
+        if let next = location.east(width), [.S, .dash, .J, .seven].contains(get(next)) {
             result.append((next, .west))
         }
         return result
@@ -133,7 +129,7 @@ struct Map {
         guard let width = lines.firstIndex(of: UInt8(10)) else {
             return nil
         }
-        let height = lines.count / (width + 1) + 1
+        let height = lines.count / (width + 1)
         guard let startpoint = lines.firstIndex(of: Tile.S.rawValue) else {
             return nil
         }
