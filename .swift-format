@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "indentation": {
+      "spaces": 4
+    },
+    "lineBreak": {
+      "maximumBlankLines": 1,
+      "lineLength": 80
+    },
+    "rules": {
+      "AlwaysUseLowerCamelCase": true,
+      "NoBlockComments": true
+    }
+  }
