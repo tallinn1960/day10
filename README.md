@@ -2,14 +2,14 @@
 > "When it comes to performance, don’t trust your intuition: measure" 
 Bjarne Stroustrup, "A tour of C++", 3rd edition
 
-This repository contains solutions to the AoC 2023 day 10 problem in Rust and C++.
+This repository contains solutions to the AoC 2023 day 10 problem in Rust, C++ and Swift.
 
 The solutions are
 
 | Bench mark name | Source | Benchmark (Criterion/Mac mini M1/macOS)|
 ------------------|---------|-|
 | **criterion/part1_rust** | Own solution for part 1 in Rust |~60 µs|
-| **criterion/part1_cpp** | Own solution for part 1 in C++ | ~220 µs|
+| **criterion/part1_cpp** | Own solution for part 1 in C++ | ~200 µs|
 | criterion/part1_swift | Own solution in Swift (*only on macOS*) | ~350 µs|
 | criterion/part2 | Own solution for part 2 in Rust |~80 µs|
 
@@ -17,11 +17,11 @@ Rust compiler version 1.79.0 (all platforms), clang 15/Swift 5.10 (macOS), gcc-1
 
 Readers may notice that the solutions for part one do more than what is required to solve part one of the AoC problem. For Rust, it turned out that computing the loop and return its locations as a vector is faster than just counting steps. So I designed all other implementations the same way. Having a vector of all locations of the loop helps to solve part 2 in a very efficient way.
 
-The benchmark results for **criterion/part1_rust** and **criterion/part1_cpp** show that C++ fails to deliver the same performance as Rust. The Rust solution is about 4 times faster (*) than the C++ solution mycpp, which uses the same abstractions as the Rust solution is using, just by C++20 means. Both solutions use Optionals, Tuples, slices (spans) and vectors, try hard to avoid unnecessary data copies by passing data around as constant references and follow the same algorithm.
+The benchmark results for **criterion/part1_rust** and **criterion/part1_cpp** show that C++ fails to deliver the same performance as Rust. The Rust solution is about 3 times faster than the C++ solution mycpp, which uses the same abstractions as the Rust solution is using, just by C++20 means. Both solutions use Optionals, Tuples, slices (spans) and vectors, try hard to avoid unnecessary data copies by passing data around as constant references and follow the same algorithm.
 
 I am pretty sure that more efficient C++ solutions than those given here are possible, but my bet is that those will look more like C than C++.
 
-(*) on a Mac mini M1 running MacOS Sonoma, it's better on Linux where the Rust code is only three times faster than the code delivered by gcc-12, unsurprising as gcc appears to produce better arm64 code than clang in general.
+(*) on a Mac mini M1 running MacOS Sonoma
 
 ## Other lessons learned - Swift keeps up almost
 
