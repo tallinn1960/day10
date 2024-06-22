@@ -56,10 +56,10 @@ public:
 enum Direction { NORTH, SOUTH, WEST, EAST };
 
 class Map {
-    std::vector<std::span<const char>> m_lines;
-    Location m_start;
-    size_t m_width;
-    size_t m_height;
+    const std::vector<std::span<const char>> m_lines;
+    const Location m_start;
+    const size_t m_width;
+    const size_t m_height;
 
     // private constructor, Map will be parsed from input
     Map(const std::vector<std::span<const char>> lines, size_t width, Location start)
@@ -209,15 +209,15 @@ class Map {
         return connected;
     }
 
-    static void look_for_startposition(
-        std::span<const char> &line,
-        std::optional<Location> &start_location,
-        std::vector<std::span<const char>> &lines) {
+    static std::optional<Location> look_for_startposition(
+        const std::span<const char> &line,
+        const std::vector<std::span<const char>> &lines) {
         char *start_position = (char *) std::memchr(line.data(), 'S', line.size());
         if (start_position != nullptr) {
-            start_location = Location(start_position - line.data(),
+           return Location(start_position - line.data(),
                                       lines.size());
         }
+        return std::nullopt;
     }
 
 public:
@@ -237,7 +237,7 @@ public:
                                       i);
 
             if (!start_location.has_value()) {
-                look_for_startposition(line, start_location, lines);
+                start_location = look_for_startposition(line, lines);
             }
 
             lines.push_back(line);
@@ -254,7 +254,7 @@ public:
         {
             auto line = input.subspan(start_of_current_line, i);
             if (!start_location.has_value()) {
-                look_for_startposition(line, start_location, lines);
+                start_location = look_for_startposition(line, lines);
             }
             lines.push_back(line);
         }
