@@ -15,7 +15,7 @@ fn part1_rust() {
 
 #[cfg(target_os = "macos")]
 #[divan::bench]
-fn swift() {
+fn part1_swift() {
     let input = divan::black_box(include_str!(
         "../input.txt",
     ));

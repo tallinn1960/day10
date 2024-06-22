@@ -83,6 +83,8 @@ struct Map {
                 nil
             }
 
+        // Check that the next location is within the map bounds and that we
+        // did not enter an unreachable tile. The starting point is always reachable.
         return result.flatMap { (next, direction) in
             guard next.x < width && next.y < height else {
                 return nil
