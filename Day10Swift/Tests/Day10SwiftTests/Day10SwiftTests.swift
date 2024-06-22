@@ -144,7 +144,7 @@ final class Day10SwiftTests: XCTestCase {
         let map = Map.parse(
             """
             ..F7.
-            .FJ|.
+            7FJ|.
             SJ.L7
             |F--J
             LJ...
