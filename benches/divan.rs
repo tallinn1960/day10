@@ -27,3 +27,8 @@ fn part1_cpp() {
 fn part2_rust() {
     p2(divan::black_box(include_str!("../input.txt",)));
 }
+
+#[divan::bench]
+fn part2_swift() {
+    day10::day10swift::p2_swift(divan::black_box(include_str!("../input.txt",)));
+}

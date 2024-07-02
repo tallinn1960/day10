@@ -49,20 +49,20 @@ struct Map {
 
     /// Given a location and the direction we came from to get there, return the next location
     /// the pipe on that tile leads us to, if there is any.
-    func nextLocation(from: Location, cameFrom: Direction) -> (Location, Direction)? {
-        guard let tile = get(from) else {
+    func nextLocation(iAmHere: Location, andCameFrom: Direction) -> (Location, Direction)? {
+        guard let tile = get(iAmHere) else {
             return nil
         }
         let result: (Location, Direction)? =
-            switch (tile, cameFrom) {
+            switch (tile, andCameFrom) {
             case (.pipe, .north), (.seven, .west), (.F, .east):
-                from.south(height).map { ($0, .north) }
+                iAmHere.south(height).map { ($0, .north) }
             case (.pipe, .south), (.L, .east), (.J, .west):
-                from.north().map { ($0, .south) }
+                iAmHere.north().map { ($0, .south) }
             case (.dash, .east), (.J, .north), (.seven, .south):
-                from.west().map { ($0, .east) }
+                iAmHere.west().map { ($0, .east) }
             case (.dash, .west), (.L, .north), (.F, .south):
-                from.east(width).map { ($0, .west) }
+                iAmHere.east(width).map { ($0, .west) }
             default:
                 nil
             }
@@ -109,7 +109,7 @@ struct Map {
             var visited: [Location] = [startLocation, next]
             var current = next
             var cameFrom = direction
-            while let (next, direction) = nextLocation(from: current, cameFrom: cameFrom) {
+            while let (next, direction) = nextLocation(iAmHere: current, andCameFrom: cameFrom) {
                 visited.append(next)
                 if next == startLocation {
                     return visited
